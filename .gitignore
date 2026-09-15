@@ -1,0 +1,29 @@
+# 環境變數與機敏設定檔 (Environment variables)
+.env
+.env.local
+.env.*.local
+*.env
+
+# 金鑰與憑證 (Secrets & Credentials)
+*.pem
+*.key
+*credentials*.json
+*serviceAccountKey*.json
+.clasprc.json
+
+# 相依套件與建置輸出 (Dependencies & Build outputs)
+node_modules/
+dist/
+.vercel/
+.netlify/
+
+# 作業系統暫存檔 (OS files)
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 編輯器快取 (Editor cache)
+.vscode/
+.idea/
+*.swp
+*.swo

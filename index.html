@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>大電視觸控雙人拔河對戰遊戲</title>
+  <style>
+    :root {
+      --blue-primary: #1976d2;
+      --blue-dark: #0d47a1;
+      --blue-light: #e3f2fd;
+      --blue-glow: rgba(33, 150, 243, 0.4);
+      --red-primary: #d32f2f;
+      --red-dark: #b71c1c;
+      --red-light: #ffebee;
+      --red-glow: rgba(244, 67, 54, 0.4);
+      --court-wood: #263238;
+      --court-lines: rgba(255, 255, 255, 0.15);
+      --rope-color: #d7ccc8;
+      --rope-texture: #8d6e63;
+      --gold: #ffd700;
+      --bg-dark: #121820;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif;
+      background-color: var(--bg-dark);
+      color: #ffffff;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      touch-action: manipulation;
+    }
+
+    /* 頂部狀態列 */
+    header {
+      height: 64px;
+      background: rgba(18, 24, 32, 0.95);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .header-left, .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-btn {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    }
+
+    .header-btn:active {
+      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-title h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #42a5f5, #ffffff, #ef5350);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .game-status-badge {
+      font-size: 13px;
+      color: #b0bec5;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    /* 主舞台：三欄式對稱佈局 */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 380px 1fr 380px;
+      height: calc(100vh - 64px);
+      position: relative;
+    }
+
+    @media (min-width: 1600px) {
+      main {
+        grid-template-columns: 440px 1fr 440px;
+      }
+    }
+
+    /* 兩側作答區 */
+    .team-panel {
+      display: flex;
+      flex-direction: column;
+      padding: 16px 20px;
+      z-index: 2;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .team-blue {
+      background: linear-gradient(180deg, rgba(13, 71, 161, 0.25) 0%, rgba(18, 24, 32, 0.9) 100%);
+      border-right: 2px solid rgba(33, 150, 243, 0.3);
+    }
+
+    .team-red {
+      background: linear-gradient(180deg, rgba(183, 28, 28, 0.25) 0%, rgba(18, 24, 32, 0.9) 100%);
+      border-left: 2px solid rgba(244, 67, 54, 0.3);
+    }
+
+    /* 隊伍標題與分數 */
+    .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .team-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .team-indicator {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .team-blue .team-indicator {
+      background-color: #29b6f6;
+      color: #29b6f6;
+    }
+
+    .team-red .team-indicator {
+      background-color: #ff5252;
+      color: #ff5252;
+    }
+
+    .team-name {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .team-blue .team-name {
+      color: #64b5f6;
+    }
+
+    .team-red .team-name {
+      color: #e57373;
+    }
+
+    .team-stats {
+      font-size: 15px;
+      color: #cfd8dc;
+      font-weight: 600;
+    }
+
+    .team-score-num {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    /* 題目看板 */
+    .question-card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 130px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      margin-bottom: 14px;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      border: 2px solid transparent;
+    }
+
+    .team-blue .question-card {
+      border-color: rgba(66, 165, 245, 0.4);
+    }
+
+    .team-red .question-card {
+      border-color: rgba(239, 83, 80, 0.4);
+    }
+
+    .question-index-tag {
+      position: absolute;
+      top: 8px;
+      left: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+    }
+
+    .question-text {
+      font-size: 32px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.35;
+      color: #f8fafc;
+      word-break: break-word;
+      margin-top: 8px;
+    }
+
+    /* 答案輸入預覽條（自製觸控顯示框，防止 OS 虛擬鍵盤彈出） */
+    .answer-display-box {
+      height: 64px;
+      background: #0f172a;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      margin-bottom: 14px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+      transition: all 0.2s ease;
+    }
+
+    .team-blue .answer-display-box.active {
+      border-color: #38bdf8;
+      box-shadow: 0 0 16px var(--blue-glow), inset 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .team-red .answer-display-box.active {
+      border-color: #f87171;
+      box-shadow: 0 0 16px var(--red-glow), inset 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .answer-label {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .answer-content-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .answer-val {
+      font-size: 36px;
+      font-weight: 900;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 4px;
+      color: #38bdf8;
+    }
+
+    .team-red .answer-val {
+      color: #f87171;
+    }
+
+    .answer-cursor {
+      width: 3px;
+      height: 32px;
+      background: #ffffff;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* 錯誤震動與警示動畫 */
+    .shake-error {
+      animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      border-color: #ef4444 !important;
+      background-color: rgba(239, 68, 68, 0.2) !important;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-3px, 0, 0); }
+      20%, 80% { transform: translate3d(5px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
+    }
+
+    /* 答對成功高亮動畫 */
+    .success-pulse {
+      animation: successPulse 0.4s ease-out;
+    }
+
+    @keyframes successPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+
+    /* 虛擬觸控數字鍵盤 */
+    .keypad-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 10px;
+      min-height: 280px;
+    }
+
+    .key-btn {
+      background: #334155;
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      font-size: 32px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #1e293b, 0 8px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.08s ease;
+      touch-action: manipulation;
+    }
+
+    .key-btn:active, .key-btn.pressed {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #1e293b, 0 3px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .team-blue .key-btn:hover {
+      background: #475569;
+    }
+
+    .team-red .key-btn:hover {
+      background: #475569;
+    }
+
+    .key-clear {
+      background: #b45309;
+      color: #fef3c7;
+      box-shadow: 0 5px 0 #78350f, 0 8px 12px rgba(0, 0, 0, 0.3);
+      font-size: 26px;
+    }
+
+    .key-clear:hover {
+      background: #d97706;
+    }
+
+    .key-clear:active, .key-clear.pressed {
+      box-shadow: 0 1px 0 #78350f;
+    }
+
+    .key-submit {
+      background: #059669;
+      color: #ecfdf5;
+      box-shadow: 0 5px 0 #065f46, 0 8px 12px rgba(0, 0, 0, 0.3);
+      font-size: 32px;
+    }
+
+    .key-submit:hover {
+      background: #10b981;
+    }
+
+    .key-submit:active, .key-submit.pressed {
+      box-shadow: 0 1px 0 #065f46;
+    }
+
+    /* 中央拔河競技場 */
+    .arena-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at center, #1e293b 0%, #0b1118 100%);
+      overflow: hidden;
+    }
+
+    /* 頂部戰況指示條 */
+    .arena-topbar {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 5;
+    }
+
+    .pull-tracker {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .steps-indicator {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .step-pip {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      transition: all 0.25s ease;
+    }
+
+    .step-pip.blue-active {
+      background: #38bdf8;
+      box-shadow: 0 0 10px #38bdf8;
+    }
+
+    .step-pip.red-active {
+      background: #f87171;
+      box-shadow: 0 0 10px #f87171;
+    }
+
+    .step-pip.center {
+      background: #fbbf24;
+      transform: scale(1.2);
+    }
+
+    /* 拔河場地動畫主容器 */
+    .arena-stage {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* 地面場地與標記 */
+    .court-ground {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 48%;
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border-top: 4px solid #475569;
+    }
+
+    .court-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255, 255, 255, 0.03) 40px, rgba(255, 255, 255, 0.03) 42px);
+    }
+
+    /* 中心判斷線 */
+    .center-judge-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      transform: translateX(-50%);
+      background: repeating-linear-gradient(180deg, #fbbf24, #fbbf24 16px, transparent 16px, transparent 28px);
+      z-index: 3;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+    }
+
+    .center-label {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fbbf24;
+      color: #78350f;
+      font-size: 13px;
+      font-weight: 900;
+      padding: 3px 10px;
+      border-radius: 12px;
+      z-index: 4;
+      white-space: nowrap;
+    }
+
+    /* 決勝警戒線 */
+    .win-boundary-blue {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(50% - 200px);
+      width: 2px;
+      border-left: 2px dashed rgba(56, 189, 248, 0.6);
+      z-index: 2;
+    }
+
+    .win-boundary-red {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(50% + 200px);
+      width: 2px;
+      border-left: 2px dashed rgba(248, 113, 113, 0.6);
+      z-index: 2;
+    }
+
+    .boundary-tag {
+      position: absolute;
+      bottom: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      transform: translateX(-50%);
+    }
+
+    .win-boundary-blue .boundary-tag {
+      background: rgba(56, 189, 248, 0.2);
+      color: #7dd3fc;
+    }
+
+    .win-boundary-red .boundary-tag {
+      background: rgba(248, 113, 113, 0.2);
+      color: #fca5a5;
+    }
+
+    /* 動態位移之拔河隊伍與繩索集合體 */
+    .tug-assembly {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+      width: 900px;
+      height: 260px;
+      pointer-events: none;
+    }
+
+    /* 拔河繩索 */
+    .rope-track {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 55%;
+      height: 22px;
+      transform: translateY(-50%);
+      background: repeating-linear-gradient(45deg, #d7ccc8, #d7ccc8 10px, #a1887f 10px, #a1887f 20px);
+      border-top: 2px solid #5d4037;
+      border-bottom: 2px solid #3e2723;
+      border-radius: 11px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+      z-index: 2;
+    }
+
+    /* 繩子中央紅色彩帶 */
+    .rope-ribbon {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 46px;
+      background: #ef4444;
+      border: 2px solid #ffffff;
+      border-radius: 4px;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.9);
+      z-index: 5;
+    }
+
+    .rope-ribbon::after {
+      content: '';
+      position: absolute;
+      bottom: -16px;
+      left: 2px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid #ef4444;
+      border-right: 8px solid #ef4444;
+      border-bottom: 8px solid transparent;
+    }
+
+    /* 拔河選手群組 */
+    .team-athletes {
+      position: absolute;
+      display: flex;
+      align-items: flex-end;
+      bottom: 25px;
+      z-index: 3;
+    }
+
+    .athletes-blue {
+      left: 100px;
+      gap: 15px;
+    }
+
+    .athletes-red {
+      right: 100px;
+      gap: 15px;
+    }
+
+    /* SVG 拔河選手造形 */
+    .athlete-svg {
+      width: 90px;
+      height: 125px;
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+      transition: transform 0.2s ease;
+    }
+
+    /* 藍隊後傾發力姿態 */
+    .athlete-blue {
+      transform-origin: bottom center;
+      transform: rotate(-14deg);
+      animation: pullStrainBlue 1.2s infinite ease-in-out alternate;
+    }
+
+    /* 紅隊後傾發力姿態 */
+    .athlete-red {
+      transform-origin: bottom center;
+      transform: rotate(14deg) scaleX(-1);
+      animation: pullStrainRed 1.2s infinite ease-in-out alternate;
+    }
+
+    @keyframes pullStrainBlue {
+      0% { transform: rotate(-12deg) translateY(0); }
+      100% { transform: rotate(-19deg) translateY(2px); }
+    }
+
+    @keyframes pullStrainRed {
+      0% { transform: rotate(12deg) scaleX(-1) translateY(0); }
+      100% { transform: rotate(19deg) scaleX(-1) translateY(2px); }
+    }
+
+    /* 答對猛烈拉扯動作 */
+    .jerk-blue {
+      animation: blueJerk 0.45s ease-out !important;
+    }
+
+    .jerk-red {
+      animation: redJerk 0.45s ease-out !important;
+    }
+
+    @keyframes blueJerk {
+      0% { transform: rotate(-14deg) translateX(0); }
+      40% { transform: rotate(-26deg) translateX(-20px); }
+      100% { transform: rotate(-14deg) translateX(0); }
+    }
+
+    @keyframes redJerk {
+      0% { transform: rotate(14deg) scaleX(-1) translateX(0); }
+      40% { transform: rotate(26deg) scaleX(-1) translateX(-20px); }
+      100% { transform: rotate(14deg) scaleX(-1) translateX(0); }
+    }
+
+    /* 灰塵特效粒子 */
+    .dust-cloud {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, rgba(203, 213, 225, 0.8) 0%, rgba(203, 213, 225, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: dustPop 0.5s ease-out forwards;
+    }
+
+    @keyframes dustPop {
+      0% { transform: scale(0.2); opacity: 0.9; }
+      100% { transform: scale(1.6) translateY(-20px); opacity: 0; }
+    }
+
+    /* 勝利結算畫面彈窗 */
+    .victory-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .victory-card {
+      background: #1e293b;
+      border-radius: 24px;
+      padding: 40px 60px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      border: 4px solid var(--gold);
+      max-width: 600px;
+      animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popUp {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .victory-trophy {
+      font-size: 72px;
+      margin-bottom: 12px;
+      animation: bounce 1.2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .victory-winner-text {
+      font-size: 40px;
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+
+    .victory-winner-text.blue {
+      color: #38bdf8;
+      text-shadow: 0 0 20px var(--blue-glow);
+    }
+
+    .victory-winner-text.red {
+      color: #f87171;
+      text-shadow: 0 0 20px var(--red-glow);
+    }
+
+    .victory-desc {
+      font-size: 18px;
+      color: #94a3b8;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .rematch-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 40px;
+      font-size: 24px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    }
+
+    .rematch-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 題庫設定彈窗 (Settings Modal) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 820px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 14px;
+    }
+
+    .modal-header h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-close-btn {
+      background: #334155;
+      border: none;
+      color: #94a3b8;
+      font-size: 22px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .preset-btn {
+      background: #334155;
+      color: #cbd5e1;
+      border: 1px solid #475569;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .preset-btn:hover {
+      background: #475569;
+      color: #ffffff;
+    }
+
+    .preset-btn:active {
+      transform: scale(0.96);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .form-tip {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .questions-textarea {
+      width: 100%;
+      height: 220px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #f8fafc;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      padding: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      background: #0f172a;
+      padding: 12px 16px;
+      border-radius: 10px;
+    }
+
+    .settings-row span {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .settings-row select {
+      background: #334155;
+      color: #ffffff;
+      border: 1px solid #475569;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      border-top: 1px solid #334155;
+      padding-top: 18px;
+    }
+
+    .btn-secondary {
+      background: #475569;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-primary {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    /* 煙火與彩紙 Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 105;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部控制列 -->
+  <header>
+    <div class="header-left">
+      <button id="btnOpenSettings" class="header-btn" title="自訂題庫與規則">
+        <span>⚙️ 題庫設定</span>
+      </button>
+      <button id="btnResetGame" class="header-btn" title="重啟本局對戰">
+        <span>🔄 重新開局</span>
+      </button>
+    </div>
+
+    <div class="header-title">
+      <h1>拔河知識大對決</h1>
+      <span id="gameStatusBadge" class="game-status-badge">雙方就定位，率先答對領先！</span>
+    </div>
+
+    <div class="header-right">
+      <button id="btnToggleSound" class="header-btn" title="切換音效">
+        <span id="soundIcon">🔊 音效開</span>
+      </button>
+      <button id="btnFullscreen" class="header-btn" title="全螢幕切換">
+        <span>⛶ 全螢幕</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主對戰舞台 -->
+  <main>
+    <!-- 左側：藍隊作答區 -->
+    <section class="team-panel team-blue">
+      <div class="team-header">
+        <div class="team-badge">
+          <div class="team-indicator"></div>
+          <span class="team-name">藍隊 TEAM 1</span>
+        </div>
+        <div class="team-stats">
+          已答對：<span id="blueScore" class="team-score-num">0</span> 題
+        </div>
+      </div>
+
+      <div class="question-card" id="blueCard">
+        <span class="question-index-tag" id="blueQuestionTag">第 1 題</span>
+        <div class="question-text" id="blueQuestionText">載入中...</div>
+      </div>
+
+      <div class="answer-display-box" id="blueAnswerBox">
+        <span class="answer-label">作答：</span>
+        <div class="answer-content-wrap">
+          <span class="answer-val" id="blueAnswerDisplay"></span>
+          <div class="answer-cursor"></div>
+        </div>
+      </div>
+
+      <div class="keypad-container" id="blueKeypad">
+        <button type="button" class="key-btn" data-key="7">7</button>
+        <button type="button" class="key-btn" data-key="8">8</button>
+        <button type="button" class="key-btn" data-key="9">9</button>
+        <button type="button" class="key-btn" data-key="4">4</button>
+        <button type="button" class="key-btn" data-key="5">5</button>
+        <button type="button" class="key-btn" data-key="6">6</button>
+        <button type="button" class="key-btn" data-key="1">1</button>
+        <button type="button" class="key-btn" data-key="2">2</button>
+        <button type="button" class="key-btn" data-key="3">3</button>
+        <button type="button" class="key-btn key-clear" data-key="CLEAR" title="清除">C</button>
+        <button type="button" class="key-btn" data-key="0">0</button>
+        <button type="button" class="key-btn key-submit" data-key="SUBMIT" title="確認送出">✓</button>
+      </div>
+    </section>
+
+    <!-- 中間：拔河動態競技場 -->
+    <section class="arena-panel">
+      <div class="arena-topbar">
+        <div class="pull-tracker">
+          <span>藍隊領先</span>
+          <div class="steps-indicator" id="stepsIndicator">
+            <!-- 步數燈泡動態產生 -->
+          </div>
+          <span>紅隊領先</span>
+        </div>
+        <div style="font-size: 14px; color: #94a3b8;">
+          勝負標準：淨領先 <span id="winThresholdDisplay" style="color: #fbbf24; font-weight:800;">5</span> 題
+        </div>
+      </div>
+
+      <div class="arena-stage" id="arenaStage">
+        <!-- 地面與格線 -->
+        <div class="court-ground">
+          <div class="court-lines"></div>
+        </div>
+
+        <!-- 勝利警戒邊界線 -->
+        <div class="win-boundary-blue">
+          <span class="boundary-tag">藍隊決勝線</span>
+        </div>
+        <div class="win-boundary-red">
+          <span class="boundary-tag">紅隊決勝線</span>
+        </div>
+
+        <!-- 中心裁判基準線 -->
+        <div class="center-judge-line"></div>
+        <div class="center-label">中心基準線</div>
+
+        <!-- 拔河隊伍組裝體（位移主體） -->
+        <div class="tug-assembly" id="tugAssembly">
+          <!-- 藍隊拔河選手（3位） -->
+          <div class="team-athletes athletes-blue" id="blueAthletes">
+            <!-- 隊員 3 -->
+            <svg class="athlete-svg athlete-blue" viewBox="0 0 100 130">
+              <circle cx="50" cy="22" r="14" fill="#64b5f6" />
+              <circle cx="56" cy="20" r="2.5" fill="#0d47a1" />
+              <!-- 咬牙表情 -->
+              <path d="M 48 27 Q 54 25 60 27" stroke="#0d47a1" stroke-width="2" fill="none" />
+              <!-- 發力身軀 -->
+              <path d="M 50 36 L 40 76 L 16 118" stroke="#1976d2" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 40 76 L 68 118" stroke="#1565c0" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <!-- 拉繩手臂 -->
+              <path d="M 45 48 L 74 65" stroke="#90caf9" stroke-width="9" stroke-linecap="round" fill="none" />
+              <!-- 汗珠 -->
+              <circle cx="68" cy="18" r="2.5" fill="#38bdf8" />
+            </svg>
+            <!-- 隊員 2 -->
+            <svg class="athlete-svg athlete-blue" viewBox="0 0 100 130">
+              <circle cx="50" cy="22" r="14" fill="#42a5f5" />
+              <circle cx="56" cy="20" r="2.5" fill="#0d47a1" />
+              <path d="M 47 27 Q 53 24 59 27" stroke="#0d47a1" stroke-width="2.5" fill="none" />
+              <path d="M 50 36 L 38 76 L 12 118" stroke="#1976d2" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 38 76 L 66 118" stroke="#1565c0" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 45 48 L 76 65" stroke="#90caf9" stroke-width="10" stroke-linecap="round" fill="none" />
+              <circle cx="67" cy="16" r="2.5" fill="#38bdf8" />
+            </svg>
+            <!-- 隊員 1（隊長領頭） -->
+            <svg class="athlete-svg athlete-blue" viewBox="0 0 100 130">
+              <circle cx="50" cy="20" r="15" fill="#2196f3" />
+              <circle cx="57" cy="18" r="2.5" fill="#0d47a1" />
+              <!-- 頭巾 -->
+              <path d="M 35 15 Q 50 10 65 15" stroke="#ffd700" stroke-width="4" fill="none" />
+              <path d="M 48 26 Q 55 23 62 26" stroke="#0d47a1" stroke-width="3" fill="none" />
+              <path d="M 50 35 L 36 76 L 8 118" stroke="#0d47a1" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 36 76 L 64 118" stroke="#1565c0" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 45 46 L 80 65" stroke="#64b5f6" stroke-width="11" stroke-linecap="round" fill="none" />
+              <circle cx="68" cy="14" r="3" fill="#38bdf8" />
+            </svg>
+          </div>
+
+          <!-- 橫貫繩索與紅標 -->
+          <div class="rope-track">
+            <div class="rope-ribbon"></div>
+          </div>
+
+          <!-- 紅隊拔河選手（3位） -->
+          <div class="team-athletes athletes-red" id="redAthletes">
+            <!-- 隊員 1（隊長領頭） -->
+            <svg class="athlete-svg athlete-red" viewBox="0 0 100 130">
+              <circle cx="50" cy="20" r="15" fill="#f44336" />
+              <circle cx="57" cy="18" r="2.5" fill="#b71c1c" />
+              <path d="M 35 15 Q 50 10 65 15" stroke="#ffd700" stroke-width="4" fill="none" />
+              <path d="M 48 26 Q 55 23 62 26" stroke="#b71c1c" stroke-width="3" fill="none" />
+              <path d="M 50 35 L 36 76 L 8 118" stroke="#b71c1c" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 36 76 L 64 118" stroke="#c62828" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 45 46 L 80 65" stroke="#ef9a9a" stroke-width="11" stroke-linecap="round" fill="none" />
+              <circle cx="68" cy="14" r="3" fill="#f87171" />
+            </svg>
+            <!-- 隊員 2 -->
+            <svg class="athlete-svg athlete-red" viewBox="0 0 100 130">
+              <circle cx="50" cy="22" r="14" fill="#e53935" />
+              <circle cx="56" cy="20" r="2.5" fill="#b71c1c" />
+              <path d="M 47 27 Q 53 24 59 27" stroke="#b71c1c" stroke-width="2.5" fill="none" />
+              <path d="M 50 36 L 38 76 L 12 118" stroke="#c62828" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 38 76 L 66 118" stroke="#b71c1c" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 45 48 L 76 65" stroke="#ef9a9a" stroke-width="10" stroke-linecap="round" fill="none" />
+              <circle cx="67" cy="16" r="2.5" fill="#f87171" />
+            </svg>
+            <!-- 隊員 3 -->
+            <svg class="athlete-svg athlete-red" viewBox="0 0 100 130">
+              <circle cx="50" cy="22" r="14" fill="#ef5350" />
+              <circle cx="56" cy="20" r="2.5" fill="#b71c1c" />
+              <path d="M 48 27 Q 54 25 60 27" stroke="#b71c1c" stroke-width="2.5" fill="none" />
+              <path d="M 50 36 L 40 76 L 16 118" stroke="#c62828" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 40 76 L 68 118" stroke="#b71c1c" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <path d="M 45 48 L 74 65" stroke="#ffcdd2" stroke-width="9" stroke-linecap="round" fill="none" />
+              <circle cx="68" cy="18" r="2.5" fill="#f87171" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右側：紅隊作答區 -->
+    <section class="team-panel team-red">
+      <div class="team-header">
+        <div class="team-badge">
+          <div class="team-indicator"></div>
+          <span class="team-name">紅隊 TEAM 2</span>
+        </div>
+        <div class="team-stats">
+          已答對：<span id="redScore" class="team-score-num">0</span> 題
+        </div>
+      </div>
+
+      <div class="question-card" id="redCard">
+        <span class="question-index-tag" id="redQuestionTag">第 1 題</span>
+        <div class="question-text" id="redQuestionText">載入中...</div>
+      </div>
+
+      <div class="answer-display-box" id="redAnswerBox">
+        <span class="answer-label">作答：</span>
+        <div class="answer-content-wrap">
+          <span class="answer-val" id="redAnswerDisplay"></span>
+          <div class="answer-cursor"></div>
+        </div>
+      </div>
+
+      <div class="keypad-container" id="redKeypad">
+        <button type="button" class="key-btn" data-key="7">7</button>
+        <button type="button" class="key-btn" data-key="8">8</button>
+        <button type="button" class="key-btn" data-key="9">9</button>
+        <button type="button" class="key-btn" data-key="4">4</button>
+        <button type="button" class="key-btn" data-key="5">5</button>
+        <button type="button" class="key-btn" data-key="6">6</button>
+        <button type="button" class="key-btn" data-key="1">1</button>
+        <button type="button" class="key-btn" data-key="2">2</button>
+        <button type="button" class="key-btn" data-key="3">3</button>
+        <button type="button" class="key-btn key-clear" data-key="CLEAR" title="清除">C</button>
+        <button type="button" class="key-btn" data-key="0">0</button>
+        <button type="button" class="key-btn key-submit" data-key="SUBMIT" title="確認送出">✓</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 勝利結算彈窗 -->
+  <div class="victory-overlay" id="victoryOverlay">
+    <div class="victory-card">
+      <div class="victory-trophy">🏆</div>
+      <div class="victory-winner-text" id="victoryWinnerText">獲勝隊伍</div>
+      <p class="victory-desc" id="victoryDesc">精彩的對決！以出色的實力與反應力拉過勝負線！</p>
+      <button class="rematch-btn" id="btnRematch">再戰一局</button>
+    </div>
+  </div>
+
+  <!-- 彩紙 Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- 題庫與遊戲設定 Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⚙️ 題庫管理與比賽設定</h2>
+        <button class="modal-close-btn" id="btnCloseModal">✕</button>
+      </div>
+
+      <!-- 快速範本按鈕 -->
+      <div class="form-group">
+        <label>⚡ 快速套用範本題庫：</label>
+        <div class="preset-buttons">
+          <button type="button" class="preset-btn" id="btnPresetMath">🔢 高年級數學四則</button>
+          <button type="button" class="preset-btn" id="btnPresetMeasure">📐 幾何與度量衡</button>
+          <button type="button" class="preset-btn" id="btnPresetIdiom">📚 國語數字成語</button>
+          <button type="button" class="preset-btn" id="btnPresetScience">🧪 自然科學趣味題</button>
+        </div>
+      </div>
+
+      <!-- 題庫文字編輯區 -->
+      <div class="form-group">
+        <label for="questionsInput">📝 編輯題庫（每行一題，格式：<code>題目, 答案</code>）：</label>
+        <div class="form-tip">
+          說明：在逗號（半形或全形皆可）左邊輸入題目，右邊輸入標準答案。<br>
+          範例：<code>8 × 9 = ?, 72</code> 或 <code>正方形有幾個直角？, 4</code>
+        </div>
+        <textarea id="questionsInput" class="questions-textarea" spellcheck="false"></textarea>
+      </div>
+
+      <!-- 規則微調 -->
+      <div class="settings-row">
+        <span>🏆 決勝拉力步數（淨領先幾題獲勝）：</span>
+        <select id="selectWinSteps">
+          <option value="3">3 步（快速對抗）</option>
+          <option value="5" selected>5 步（標準競技）</option>
+          <option value="7">7 步（持久耐力）</option>
+          <option value="10">10 步（魔王巔峰）</option>
+        </select>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btnResetDefault">恢復預設題庫</button>
+        <button type="button" class="btn-primary" id="btnSaveSettings">儲存並重啟遊戲</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript 核心邏輯 -->
+  <script>
+    // ==========================================================================
+    // 🎯【方式一：直接在程式碼中修改題庫】
+    // 老師若要固定專屬題目，可直接修改下方陣列中的 question（題目）與 answer（答案）。
+    // ==========================================================================
+    const DEFAULT_QUESTION_BANK = [
+      { question: "8 × 9 = ?", answer: "72" },
+      { question: "125 ÷ 5 = ?", answer: "25" },
+      { question: "48 + 57 = ?", answer: "105" },
+      { question: "15 × 12 = ?", answer: "180" },
+      { question: "360 ÷ 12 = ?", answer: "30" },
+      { question: "7 × 7 - 15 = ?", answer: "34" },
+      { question: "一個三角形的內角和是幾度？", answer: "180" },
+      { question: "時針走一圈是幾小時？", answer: "12" },
+      { question: "1 公尺等於幾公分？", answer: "100" },
+      { question: "2 的 5 次方是多少？", answer: "32" },
+      { question: "平年二月有幾天？", answer: "28" },
+      { question: "99 + 999 = ?", answer: "1098" },
+      { question: "50 的一半再除以 5 = ?", answer: "5" },
+      { question: "正六邊形有幾條對稱軸？", answer: "6" },
+      { question: "100 - 37 = ?", answer: "63" },
+      { question: "一打鉛筆有幾枝？", answer: "12" },
+      { question: "圓周率取整數大約是多少？", answer: "3" },
+      { question: "正方體有幾個面？", answer: "6" }
+    ];
+
+    // 內建其他領域預設範本
+    const PRESET_BANKS = {
+      math: [
+        { question: "8 × 9 = ?", answer: "72" },
+        { question: "125 ÷ 5 = ?", answer: "25" },
+        { question: "48 + 57 = ?", answer: "105" },
+        { question: "15 × 12 = ?", answer: "180" },
+        { question: "360 ÷ 12 = ?", answer: "30" },
+        { question: "7 × 7 - 15 = ?", answer: "34" },
+        { question: "1000 - 357 = ?", answer: "643" },
+        { question: "14 × 14 = ?", answer: "196" }
+      ],
+      measure: [
+        { question: "1 公尺等於幾公分？", answer: "100" },
+        { question: "1 公斤等於幾公克？", answer: "1000" },
+        { question: "直角是幾度？", answer: "90" },
+        { question: "平角是幾度？", answer: "180" },
+        { question: "三角形內角和是幾度？", answer: "180" },
+        { question: "四邊形內角和是幾度？", answer: "360" },
+        { question: "一天有幾小時？", answer: "24" },
+        { question: "一小時有幾秒？", answer: "3600" }
+      ],
+      idiom: [
+        { question: "「( )面楚歌」應填入數字？", answer: "4" },
+        { question: "「( )上( )下」形容心神不定？", answer: "78" },
+        { question: "「( )言( )鼎」比喻說話極有份量？", answer: "19" },
+        { question: "「垂涎( )尺」應填入數字？", answer: "3" },
+        { question: "「五顏( )色」應填入數字？", answer: "6" },
+        { question: "「接二連( )」應填入數字？", answer: "3" },
+        { question: "「( )顧茅廬」劉備請諸葛亮？", answer: "3" },
+        { question: "「( )全( )美」？", answer: "1010" }
+      ],
+      science: [
+        { question: "成年人全身骨骼大約有幾塊？", answer: "206" },
+        { question: "常溫常壓下水沸騰是幾度C？", answer: "100" },
+        { question: "水在幾度C時結冰？", answer: "0" },
+        { question: "昆蟲有幾隻腳？", answer: "6" },
+        { question: "蜘蛛有幾隻腳？", answer: "8" },
+        { question: "太陽系有幾大行星？", answer: "8" },
+        { question: "光速每秒約幾萬公里？", answer: "30" }
+      ]
+    };
+
+    // ==========================================================================
+    // 🔊 離線 Web Audio API 音效合成引擎（無外部依賴、純本地發聲）
+    // ==========================================================================
+    class SoundFX {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      initContext() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.15) {
+        if (!this.enabled) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      playClick() {
+        this.playTone(600, 'triangle', 0.05, 0.1);
+      }
+
+      playCorrect() {
+        if (!this.enabled) return;
+        this.initContext();
+        if (!this.ctx) return;
+        // 歡快三和弦
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, 'sine', 0.16, 0.2);
+          }, idx * 60);
+        });
+      }
+
+      playWrong() {
+        if (!this.enabled) return;
+        this.initContext();
+        if (!this.ctx) return;
+        // 低沉快速兩聲鋸齒波
+        this.playTone(180, 'sawtooth', 0.12, 0.25);
+        setTimeout(() => {
+          this.playTone(130, 'sawtooth', 0.18, 0.25);
+        }, 110);
+      }
+
+      playWin() {
+        if (!this.enabled) return;
+        this.initContext();
+        if (!this.ctx) return;
+        // 凱旋號角
+        const fanfare = [
+          { f: 523.25, d: 0.15, wait: 0 },
+          { f: 659.25, d: 0.15, wait: 150 },
+          { f: 783.99, d: 0.15, wait: 300 },
+          { f: 1046.50, d: 0.5, wait: 450 },
+          { f: 880.00, d: 0.2, wait: 800 },
+          { f: 1046.50, d: 0.8, wait: 1020 }
+        ];
+        fanfare.forEach(note => {
+          setTimeout(() => {
+            this.playTone(note.f, 'triangle', note.d, 0.3);
+          }, note.wait);
+        });
+      }
+    }
+
+    const sound = new SoundFX();
+
+    // ==========================================================================
+    // 🎮 遊戲核心狀態管理
+    // ==========================================================================
+    class TugGame {
+      constructor() {
+        this.questions = [];
+        this.winSteps = 5; // 預設淨領先 5 步獲勝
+        this.currentStep = 0; // 0 為中線，負數代表藍隊領先，正數代表紅隊領先
+        this.isGameOver = false;
+
+        // 兩隊獨立狀態機
+        this.teamBlue = {
+          name: "藍隊 TEAM 1",
+          score: 0,
+          currentQuestionIndex: 0,
+          currentInput: "",
+          shuffledQuestions: []
+        };
+
+        this.teamRed = {
+          name: "紅隊 TEAM 2",
+          score: 0,
+          currentQuestionIndex: 0,
+          currentInput: "",
+          shuffledQuestions: []
+        };
+
+        this.initElements();
+        this.loadQuestions();
+        this.bindEvents();
+        this.startNewGame();
+      }
+
+      initElements() {
+        // 藍隊 DOM
+        this.elBlueScore = document.getElementById('blueScore');
+        this.elBlueCard = document.getElementById('blueCard');
+        this.elBlueQuestionTag = document.getElementById('blueQuestionTag');
+        this.elBlueQuestionText = document.getElementById('blueQuestionText');
+        this.elBlueAnswerBox = document.getElementById('blueAnswerBox');
+        this.elBlueAnswerDisplay = document.getElementById('blueAnswerDisplay');
+        this.elBlueKeypad = document.getElementById('blueKeypad');
+        this.elBlueAthletes = document.getElementById('blueAthletes');
+
+        // 紅隊 DOM
+        this.elRedScore = document.getElementById('redScore');
+        this.elRedCard = document.getElementById('redCard');
+        this.elRedQuestionTag = document.getElementById('redQuestionTag');
+        this.elRedQuestionText = document.getElementById('redQuestionText');
+        this.elRedAnswerBox = document.getElementById('redAnswerBox');
+        this.elRedAnswerDisplay = document.getElementById('redAnswerDisplay');
+        this.elRedKeypad = document.getElementById('redKeypad');
+        this.elRedAthletes = document.getElementById('redAthletes');
+
+        // 中央場地 DOM
+        this.elTugAssembly = document.getElementById('tugAssembly');
+        this.elArenaStage = document.getElementById('arenaStage');
+        this.elStepsIndicator = document.getElementById('stepsIndicator');
+        this.elWinThresholdDisplay = document.getElementById('winThresholdDisplay');
+        this.elGameStatusBadge = document.getElementById('gameStatusBadge');
+
+        // 結算與控制按鈕
+        this.elVictoryOverlay = document.getElementById('victoryOverlay');
+        this.elVictoryWinnerText = document.getElementById('victoryWinnerText');
+        this.elVictoryDesc = document.getElementById('victoryDesc');
+        this.elBtnRematch = document.getElementById('btnRematch');
+
+        this.elBtnResetGame = document.getElementById('btnResetGame');
+        this.elBtnToggleSound = document.getElementById('btnToggleSound');
+        this.elSoundIcon = document.getElementById('soundIcon');
+        this.elBtnFullscreen = document.getElementById('btnFullscreen');
+
+        // 題庫設定彈窗
+        this.elSettingsModal = document.getElementById('settingsModal');
+        this.elBtnOpenSettings = document.getElementById('btnOpenSettings');
+        this.elBtnCloseModal = document.getElementById('btnCloseModal');
+        this.elQuestionsInput = document.getElementById('questionsInput');
+        this.elSelectWinSteps = document.getElementById('selectWinSteps');
+        this.elBtnSaveSettings = document.getElementById('btnSaveSettings');
+        this.elBtnResetDefault = document.getElementById('btnResetDefault');
+
+        // 範本按鈕
+        this.elBtnPresetMath = document.getElementById('btnPresetMath');
+        this.elBtnPresetMeasure = document.getElementById('btnPresetMeasure');
+        this.elBtnPresetIdiom = document.getElementById('btnPresetIdiom');
+        this.elBtnPresetScience = document.getElementById('btnPresetScience');
+      }
+
+      // 洗牌演算法
+      shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      // 載入題庫（優先從 localStorage 讀取，沒有則使用預設）
+      loadQuestions() {
+        const savedQuestions = localStorage.getItem('tug_of_war_questions');
+        const savedSteps = localStorage.getItem('tug_of_war_winsteps');
+
+        if (savedSteps) {
+          this.winSteps = parseInt(savedSteps, 10) || 5;
+        }
+
+        if (savedQuestions) {
+          try {
+            const parsed = JSON.parse(savedQuestions);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              this.questions = parsed;
+              return;
+            }
+          } catch (e) {
+            console.error('題庫載入異常，改用預設題庫', e);
+          }
+        }
+        this.questions = [...DEFAULT_QUESTION_BANK];
+      }
+
+      // 重啟比賽
+      startNewGame() {
+        this.isGameOver = false;
+        this.currentStep = 0;
+        this.winSteps = parseInt(this.elSelectWinSteps.value, 10) || 5;
+        this.elWinThresholdDisplay.textContent = this.winSteps;
+
+        // 兩隊分別獨立洗牌題庫
+        this.teamBlue.score = 0;
+        this.teamBlue.currentInput = "";
+        this.teamBlue.currentQuestionIndex = 0;
+        this.teamBlue.shuffledQuestions = this.shuffle(this.questions);
+
+        this.teamRed.score = 0;
+        this.teamRed.currentInput = "";
+        this.teamRed.currentQuestionIndex = 0;
+        this.teamRed.shuffledQuestions = this.shuffle(this.questions);
+
+        this.elBlueScore.textContent = '0';
+        this.elRedScore.textContent = '0';
+        this.updateAnswerDisplay('blue');
+        this.updateAnswerDisplay('red');
+
+        this.renderQuestion('blue');
+        this.renderQuestion('red');
+
+        this.updateTugPosition();
+        this.renderStepsIndicator();
+
+        this.elVictoryOverlay.style.display = 'none';
+        stopConfetti();
+
+        this.elGameStatusBadge.textContent = `雙方就定位，率先淨勝 ${this.winSteps} 題奪冠！`;
+      }
+
+      // 渲染步數燈號
+      renderStepsIndicator() {
+        this.elStepsIndicator.innerHTML = '';
+        for (let s = -this.winSteps; s <= this.winSteps; s++) {
+          const pip = document.createElement('div');
+          pip.className = 'step-pip';
+          if (s === 0) {
+            pip.classList.add('center');
+          }
+          if (this.currentStep < 0 && s >= this.currentStep && s < 0) {
+            pip.classList.add('blue-active');
+          } else if (this.currentStep > 0 && s <= this.currentStep && s > 0) {
+            pip.classList.add('red-active');
+          }
+          this.elStepsIndicator.appendChild(pip);
+        }
+      }
+
+      // 渲染隊伍題目
+      renderQuestion(teamKey) {
+        const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
+        const tagEl = teamKey === 'blue' ? this.elBlueQuestionTag : this.elRedQuestionTag;
+        const textEl = teamKey === 'blue' ? this.elBlueQuestionText : this.elRedQuestionText;
+
+        const currentQ = team.shuffledQuestions[team.currentQuestionIndex % team.shuffledQuestions.length];
+        tagEl.textContent = `第 ${team.currentQuestionIndex + 1} 題`;
+        textEl.textContent = currentQ.question;
+      }
+
+      // 更新自製輸入條文字
+      updateAnswerDisplay(teamKey) {
+        const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
+        const displayEl = teamKey === 'blue' ? this.elBlueAnswerDisplay : this.elRedAnswerDisplay;
+        const boxEl = teamKey === 'blue' ? this.elBlueAnswerBox : this.elRedAnswerBox;
+
+        displayEl.textContent = team.currentInput;
+        if (team.currentInput.length > 0) {
+          boxEl.classList.add('active');
+        } else {
+          boxEl.classList.remove('active');
+        }
+      }
+
+      // 處理鍵盤按鍵（0 延遲原生觸控）
+      handleKeyInput(teamKey, key) {
+        if (this.isGameOver) return;
+        sound.playClick();
+
+        const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
+
+        if (key === 'CLEAR') {
+          team.currentInput = '';
+          this.updateAnswerDisplay(teamKey);
+          return;
+        }
+
+        if (key === 'SUBMIT') {
+          this.submitAnswer(teamKey);
+          return;
+        }
+
+        // 輸入限制最多 8 碼，防止溢位
+        if (team.currentInput.length < 8) {
+          team.currentInput += key;
+          this.updateAnswerDisplay(teamKey);
+        }
+      }
+
+      // 驗證答案
+      submitAnswer(teamKey) {
+        const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
+        const boxEl = teamKey === 'blue' ? this.elBlueAnswerBox : this.elRedAnswerBox;
+        const cardEl = teamKey === 'blue' ? this.elBlueCard : this.elRedCard;
+
+        if (!team.currentInput || team.currentInput.trim() === '') {
+          return;
+        }
+
+        const currentQ = team.shuffledQuestions[team.currentQuestionIndex % team.shuffledQuestions.length];
+        const userAnswer = team.currentInput.trim().toLowerCase();
+        const correctAnswer = String(currentQ.answer).trim().toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+          // 答對了！
+          sound.playCorrect();
+          team.score++;
+          if (teamKey === 'blue') {
+            this.elBlueScore.textContent = team.score;
+            this.currentStep--; // 藍隊往左拉（負方向）
+          } else {
+            this.elRedScore.textContent = team.score;
+            this.currentStep++; // 紅隊往右拉（正方向）
+          }
+
+          // 視覺回饋
+          cardEl.classList.add('success-pulse');
+          setTimeout(() => cardEl.classList.remove('success-pulse'), 400);
+          this.triggerPullAnimation(teamKey);
+
+          // 切換下一題
+          team.currentInput = '';
+          team.currentQuestionIndex++;
+          this.updateAnswerDisplay(teamKey);
+          this.renderQuestion(teamKey);
+
+          // 更新拔河位置與燈號
+          this.updateTugPosition();
+          this.renderStepsIndicator();
+
+          // 判斷勝負
+          this.checkWinCondition();
+        } else {
+          // 答錯了！
+          sound.playWrong();
+          boxEl.classList.add('shake-error');
+          setTimeout(() => {
+            boxEl.classList.remove('shake-error');
+            team.currentInput = '';
+            this.updateAnswerDisplay(teamKey);
+          }, 500);
+        }
+      }
+
+      // 拔河拉扯動畫與煙塵
+      triggerPullAnimation(winnerKey) {
+        if (winnerKey === 'blue') {
+          this.elBlueAthletes.querySelectorAll('.athlete-blue').forEach(a => {
+            a.classList.add('jerk-blue');
+            setTimeout(() => a.classList.remove('jerk-blue'), 450);
+          });
+          this.spawnDust(true);
+        } else {
+          this.elRedAthletes.querySelectorAll('.athlete-red').forEach(a => {
+            a.classList.add('jerk-red');
+            setTimeout(() => a.classList.remove('jerk-red'), 450);
+          });
+          this.spawnDust(false);
+        }
+      }
+
+      // 生成腳底灰塵粒子
+      spawnDust(isBlue) {
+        const dust = document.createElement('div');
+        dust.className = 'dust-cloud';
+        dust.style.bottom = '40px';
+        dust.style.left = isBlue ? '35%' : '65%';
+        this.elArenaStage.appendChild(dust);
+        setTimeout(() => dust.remove(), 500);
+      }
+
+      // 更新繩索與選手的平移位移
+      updateTugPosition() {
+        // 每 1 步平移 40px（決勝線 5 步 = 200px）
+        const offsetPx = this.currentStep * 40;
+        this.elTugAssembly.style.transform = `translate(calc(-50% + ${offsetPx}px), -50%)`;
+
+        // 更新狀態文字
+        if (this.currentStep < 0) {
+          this.elGameStatusBadge.textContent = `戰況：藍隊領先 ${Math.abs(this.currentStep)} 步！加油！`;
+        } else if (this.currentStep > 0) {
+          this.elGameStatusBadge.textContent = `戰況：紅隊領先 ${this.currentStep} 步！加油！`;
+        } else {
+          this.elGameStatusBadge.textContent = `雙方拉鋸中！目前平手！`;
+        }
+      }
+
+      // 檢查是否達到獲勝門檻
+      checkWinCondition() {
+        if (Math.abs(this.currentStep) >= this.winSteps) {
+          this.isGameOver = true;
+          sound.playWin();
+          startConfetti();
+
+          const isBlueWinner = this.currentStep <= -this.winSteps;
+          const winnerText = isBlueWinner ? '藍隊 TEAM 1 獲勝！' : '紅隊 TEAM 2 獲勝！';
+          const winnerClass = isBlueWinner ? 'blue' : 'red';
+
+          this.elVictoryWinnerText.textContent = winnerText;
+          this.elVictoryWinnerText.className = `victory-winner-text ${winnerClass}`;
+          this.elVictoryDesc.textContent = `總共耗時激烈拉扯，率先將繩索拉過決勝線！\n藍隊總答對 ${this.teamBlue.score} 題，紅隊總答對 ${this.teamRed.score} 題。`;
+          this.elVictoryOverlay.style.display = 'flex';
+        }
+      }
+
+      // 綁定全域與觸控事件（支援大螢幕左右雙人多點觸控獨立操作）
+      bindEvents() {
+        // 綁定藍隊按鍵（使用 pointerdown 支援多點觸控且 0 延遲）
+        this.elBlueKeypad.addEventListener('pointerdown', (e) => {
+          const btn = e.target.closest('.key-btn');
+          if (!btn) return;
+          e.preventDefault();
+          btn.classList.add('pressed');
+          this.handleKeyInput('blue', btn.dataset.key);
+        });
+
+        this.elBlueKeypad.addEventListener('pointerup', (e) => {
+          const btn = e.target.closest('.key-btn');
+          if (btn) btn.classList.remove('pressed');
+        });
+
+        this.elBlueKeypad.addEventListener('pointercancel', (e) => {
+          const btn = e.target.closest('.key-btn');
+          if (btn) btn.classList.remove('pressed');
+        });
+
+        // 綁定紅隊按鍵
+        this.elRedKeypad.addEventListener('pointerdown', (e) => {
+          const btn = e.target.closest('.key-btn');
+          if (!btn) return;
+          e.preventDefault();
+          btn.classList.add('pressed');
+          this.handleKeyInput('red', btn.dataset.key);
+        });
+
+        this.elRedKeypad.addEventListener('pointerup', (e) => {
+          const btn = e.target.closest('.key-btn');
+          if (btn) btn.classList.remove('pressed');
+        });
+
+        this.elRedKeypad.addEventListener('pointercancel', (e) => {
+          const btn = e.target.closest('.key-btn');
+          if (btn) btn.classList.remove('pressed');
+        });
+
+        // 重新開局按鈕
+        this.elBtnResetGame.addEventListener('click', () => {
+          sound.initContext();
+          if (confirm('確定要重新開始本局拔河比賽嗎？')) {
+            this.startNewGame();
+          }
+        });
+
+        this.elBtnRematch.addEventListener('click', () => {
+          this.startNewGame();
+        });
+
+        // 音效開關切換
+        this.elBtnToggleSound.addEventListener('click', () => {
+          sound.initContext();
+          sound.enabled = !sound.enabled;
+          this.elSoundIcon.textContent = sound.enabled ? '🔊 音效開' : '🔇 靜音中';
+        });
+
+        // 全螢幕切換
+        this.elBtnFullscreen.addEventListener('click', () => {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+              console.warn('無法開啟全螢幕模式', err);
+            });
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            }
+          }
+        });
+
+        // 題庫設定彈窗互動
+        this.elBtnOpenSettings.addEventListener('click', () => {
+          sound.initContext();
+          this.openSettingsModal();
+        });
+
+        this.elBtnCloseModal.addEventListener('click', () => {
+          this.elSettingsModal.style.display = 'none';
+        });
+
+        this.elBtnSaveSettings.addEventListener('click', () => {
+          this.saveSettingsFromModal();
+        });
+
+        this.elBtnResetDefault.addEventListener('click', () => {
+          if (confirm('確定要清除自訂題庫，重設回系統預設題庫嗎？')) {
+            localStorage.removeItem('tug_of_war_questions');
+            localStorage.removeItem('tug_of_war_winsteps');
+            this.loadQuestions();
+            this.populateTextareaFromQuestions();
+            alert('已恢復預設題庫！');
+          }
+        });
+
+        // 範本快速按鈕
+        this.elBtnPresetMath.addEventListener('click', () => this.applyPreset('math'));
+        this.elBtnPresetMeasure.addEventListener('click', () => this.applyPreset('measure'));
+        this.elBtnPresetIdiom.addEventListener('click', () => this.applyPreset('idiom'));
+        this.elBtnPresetScience.addEventListener('click', () => this.applyPreset('science'));
+
+        // 鍵盤輔助（實體鍵盤玩家測試用：左邊藍隊使用鍵盤上排數字與 Enter，右邊紅隊使用右側九宮格數字鍵）
+        window.addEventListener('keydown', (e) => {
+          // 若彈窗打開中，允許一般文字編輯
+          if (this.elSettingsModal.style.display === 'flex') return;
+
+          // 藍隊鍵盤對應（數字鍵 0~9, Backspace 清除, Enter 送出）
+          if (['Digit0','Digit1','Digit2','Digit3','Digit4','Digit5','Digit6','Digit7','Digit8','Digit9'].includes(e.code)) {
+            this.handleKeyInput('blue', e.code.replace('Digit', ''));
+          } else if (e.code === 'Backspace') {
+            this.handleKeyInput('blue', 'CLEAR');
+          } else if (e.code === 'Enter') {
+            this.handleKeyInput('blue', 'SUBMIT');
+          }
+
+          // 紅隊鍵盤對應（小鍵盤 Numpad 0~9, NumpadDecimal 清除, NumpadEnter 送出）
+          if (['Numpad0','Numpad1','Numpad2','Numpad3','Numpad4','Numpad5','Numpad6','Numpad7','Numpad8','Numpad9'].includes(e.code)) {
+            this.handleKeyInput('red', e.code.replace('Numpad', ''));
+          } else if (e.code === 'NumpadDecimal') {
+            this.handleKeyInput('red', 'CLEAR');
+          } else if (e.code === 'NumpadEnter') {
+            this.handleKeyInput('red', 'SUBMIT');
+          }
+        });
+      }
+
+      openSettingsModal() {
+        this.populateTextareaFromQuestions();
+        this.elSelectWinSteps.value = this.winSteps;
+        this.elSettingsModal.style.display = 'flex';
+      }
+
+      populateTextareaFromQuestions() {
+        const lines = this.questions.map(q => `${q.question}, ${q.answer}`);
+        this.elQuestionsInput.value = lines.join('\n');
+      }
+
+      applyPreset(presetKey) {
+        const bank = PRESET_BANKS[presetKey];
+        if (bank) {
+          const lines = bank.map(q => `${q.question}, ${q.answer}`);
+          this.elQuestionsInput.value = lines.join('\n');
+        }
+      }
+
+      saveSettingsFromModal() {
+        const rawText = this.elQuestionsInput.value.trim();
+        if (!rawText) {
+          alert('請至少輸入一道題目！');
+          return;
+        }
+
+        const lines = rawText.split('\n');
+        const parsedQuestions = [];
+
+        for (let idx = 0; idx < lines.length; idx++) {
+          const line = lines[idx].trim();
+          if (!line) continue;
+
+          // 支援中文全形逗號或英文半形逗號分割
+          const splitParts = line.includes('，') ? line.split('，') : line.split(',');
+          if (splitParts.length < 2) {
+            alert(`第 ${idx + 1} 行格式不正確：\n"${line}"\n請使用「題目, 答案」格式！`);
+            return;
+          }
+
+          const qText = splitParts[0].trim();
+          const aText = splitParts.slice(1).join(',').trim(); // 避免答案內含逗號
+          if (qText && aText) {
+            parsedQuestions.push({ question: qText, answer: aText });
+          }
+        }
+
+        if (parsedQuestions.length === 0) {
+          alert('未能解析出有效題目，請檢查格式！');
+          return;
+        }
+
+        this.questions = parsedQuestions;
+        this.winSteps = parseInt(this.elSelectWinSteps.value, 10) || 5;
+
+        // 保存至 localStorage 實現本機記憶
+        try {
+          localStorage.setItem('tug_of_war_questions', JSON.stringify(this.questions));
+          localStorage.setItem('tug_of_war_winsteps', this.winSteps.toString());
+        } catch (e) {
+          console.error(e);
+        }
+
+        this.elSettingsModal.style.display = 'none';
+        alert(`題庫更新成功！共匯入 ${this.questions.length} 道題目。即刻開局！`);
+        this.startNewGame();
+      }
+    }
+
+    // ==========================================================================
+    // 🎊 勝利彩紙特效引擎（Canvas Confetti）
+    // ==========================================================================
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimId = null;
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+
+    function startConfetti() {
+      confettiCanvas.style.display = 'block';
+      confettiParticles = [];
+      const colors = ['#f43f5e', '#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#ec4899'];
+      for (let i = 0; i < 150; i++) {
+        confettiParticles.push({
+          x: Math.random() * confettiCanvas.width,
+          y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+          w: Math.random() * 12 + 6,
+          h: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: Math.random() * 4 - 2,
+          vy: Math.random() * 5 + 3,
+          rot: Math.random() * 360,
+          vrot: Math.random() * 10 - 5
+        });
+      }
+      renderConfetti();
+    }
+
+    function renderConfetti() {
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiParticles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vrot;
+
+        confettiCtx.save();
+        confettiCtx.translate(p.x, p.y);
+        confettiCtx.rotate((p.rot * Math.PI) / 180);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        confettiCtx.restore();
+
+        if (p.y > confettiCanvas.height) {
+          p.y = -20;
+          p.x = Math.random() * confettiCanvas.width;
+        }
+      });
+      confettiAnimId = requestAnimationFrame(renderConfetti);
+    }
+
+    function stopConfetti() {
+      if (confettiAnimId) {
+        cancelAnimationFrame(confettiAnimId);
+        confettiAnimId = null;
+      }
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiCanvas.style.display = 'none';
+    }
+
+    // ==========================================================================
+    // 🚀 初始化遊戲
+    // ==========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      new TugGame();
+    });
+  </script>
+</body>
+</html>
