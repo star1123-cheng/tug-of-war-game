@@ -1570,7 +1570,31 @@
           try {
             const parsed = JSON.parse(savedQuestions);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              this.questions = parsed;
+              let repaired = false;
+              this.questions = parsed.map(q => {
+                const ans = String(q.answer || '').trim();
+                // 若答案字串過長且包含中文標點，代表是先前被錯誤截斷的舊題庫資料，自動進行自我修復
+                if (ans.length > 8 && (ans.includes('，') || ans.includes(',') || ans.includes('？') || ans.includes('?'))) {
+                  repaired = true;
+                  const fullStr = q.question + '，' + ans;
+                  const lastComma = Math.max(fullStr.lastIndexOf(','), fullStr.lastIndexOf('，'));
+                  if (lastComma !== -1) {
+                    return {
+                      question: fullStr.substring(0, lastComma).trim(),
+                      answer: fullStr.substring(lastComma + 1).trim()
+                    };
+                  }
+                }
+                return q;
+              });
+
+              if (repaired) {
+                try {
+                  localStorage.setItem('tug_of_war_questions', JSON.stringify(this.questions));
+                } catch (e) {
+                  console.error(e);
+                }
+              }
               return;
             }
           } catch (e) {
@@ -1727,6 +1751,18 @@
         }
       }
 
+      // 答案字串正規化（去除空白、全形轉半形）
+      normalizeAnswer(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .trim()
+          // 全形英數轉半形
+          .replace(/[\uFF01-\uFF5E]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+          // 移除所有空格及不可見字元
+          .replace(/[\s\uFEFF\u00A0\u3000]+/g, '')
+          .toLowerCase();
+      }
+
       // 驗證答案
       submitAnswer(teamKey) {
         const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
@@ -1738,10 +1774,26 @@
         }
 
         const currentQ = team.shuffledQuestions[team.currentQuestionIndex % team.shuffledQuestions.length];
-        const userAnswer = team.currentInput.trim().toLowerCase();
-        const correctAnswer = String(currentQ.answer).trim().toLowerCase();
+        const rawUser = team.currentInput;
+        const rawCorrect = String(currentQ.answer || '');
 
-        if (userAnswer === correctAnswer) {
+        const userClean = this.normalizeAnswer(rawUser);
+        let correctClean = this.normalizeAnswer(rawCorrect);
+
+        // 防呆 1：若答案依然夾帶逗號或問號（舊資料未清理），自動擷取最後一部分作為答案
+        if (correctClean.includes('，') || correctClean.includes(',') || correctClean.includes('？') || correctClean.includes('?')) {
+          const splitParts = rawCorrect.split(/[,，]/);
+          if (splitParts.length > 1) {
+            correctClean = this.normalizeAnswer(splitParts[splitParts.length - 1]);
+          }
+        }
+
+        // 防呆 2：若題目答案包含中文單位（如「30分鐘」或「12公分」），而虛擬鍵盤只有數字，比對純數字部分
+        const correctDigitsOnly = correctClean.replace(/[^0-9a-z]/g, '');
+
+        const isCorrect = (userClean === correctClean) || (correctDigitsOnly && userClean === correctDigitsOnly);
+
+        if (isCorrect) {
           // 答對了！
           sound.playCorrect();
           team.score++;
