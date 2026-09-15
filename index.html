@@ -125,10 +125,11 @@
     .team-panel {
       display: flex;
       flex-direction: column;
-      padding: 16px 20px;
+      padding: 14px 18px;
       z-index: 2;
       position: relative;
       overflow: hidden;
+      gap: 10px;
     }
 
     .team-blue {
@@ -146,8 +147,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 2px solid rgba(255, 255, 255, 0.15);
     }
 
@@ -200,21 +200,22 @@
       color: #ffffff;
     }
 
-    /* 題目看板 */
+    /* 題目看板（與鍵盤各佔一半 50% / 50%，可舒適容納 50 字長題） */
     .question-card {
       background: #1e293b;
       border-radius: 14px;
-      padding: 16px 18px;
+      padding: 28px 18px 16px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 130px;
+      flex: 1 1 0;
+      min-height: 0;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      margin-bottom: 14px;
       position: relative;
       transition: transform 0.2s ease, border-color 0.2s ease;
       border: 2px solid transparent;
+      overflow-y: auto;
     }
 
     .team-blue .question-card {
@@ -236,21 +237,25 @@
       border-radius: 4px;
       background: rgba(255, 255, 255, 0.1);
       color: #94a3b8;
+      z-index: 2;
     }
 
     .question-text {
       font-size: 32px;
-      font-weight: 900;
+      font-weight: 800;
       text-align: center;
       line-height: 1.35;
       color: #f8fafc;
       word-break: break-word;
-      margin-top: 8px;
+      width: 100%;
+      margin: 0;
+      transition: font-size 0.2s ease;
     }
 
     /* 答案輸入預覽條（自製觸控顯示框，防止 OS 虛擬鍵盤彈出） */
     .answer-display-box {
-      height: 64px;
+      flex: 0 0 54px;
+      height: 54px;
       background: #0f172a;
       border-radius: 12px;
       border: 2px solid rgba(255, 255, 255, 0.2);
@@ -258,7 +263,6 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      margin-bottom: 14px;
       box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
       transition: all 0.2s ease;
     }
@@ -334,14 +338,14 @@
       100% { transform: scale(1); }
     }
 
-    /* 虛擬觸控數字鍵盤 */
+    /* 虛擬觸控數字鍵盤（與題目看板 1:1 一半一半） */
     .keypad-container {
-      flex: 1;
+      flex: 1 1 0;
+      min-height: 0;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(4, 1fr);
       gap: 10px;
-      min-height: 280px;
     }
 
     .key-btn {
@@ -1630,6 +1634,50 @@
         const currentQ = team.shuffledQuestions[team.currentQuestionIndex % team.shuffledQuestions.length];
         tagEl.textContent = `第 ${team.currentQuestionIndex + 1} 題`;
         textEl.textContent = currentQ.question;
+        this.adjustQuestionFontSize(textEl, currentQ.question);
+      }
+
+      // 依據字數多寡動態調整字體大小，確保能舒適容納 50 字以上長題且不溢位
+      adjustQuestionFontSize(textEl, text) {
+        const len = text ? text.trim().length : 0;
+        let fontSize = 32;
+        let lineHeight = 1.35;
+
+        if (len <= 8) {
+          fontSize = 38;
+          lineHeight = 1.3;
+        } else if (len <= 16) {
+          fontSize = 32;
+          lineHeight = 1.35;
+        } else if (len <= 28) {
+          fontSize = 26;
+          lineHeight = 1.4;
+        } else if (len <= 45) {
+          fontSize = 22;
+          lineHeight = 1.45;
+        } else if (len <= 65) {
+          fontSize = 19;
+          lineHeight = 1.45;
+        } else {
+          fontSize = 16;
+          lineHeight = 1.4;
+        }
+
+        textEl.style.fontSize = `${fontSize}px`;
+        textEl.style.lineHeight = lineHeight;
+
+        // 智慧防溢位檢查：若依然超出容器高度，逐級平滑微調縮小
+        requestAnimationFrame(() => {
+          const cardEl = textEl.closest('.question-card');
+          if (cardEl) {
+            const availableHeight = cardEl.clientHeight - 46;
+            let currentSize = fontSize;
+            while (textEl.scrollHeight > availableHeight && currentSize > 14) {
+              currentSize -= 1;
+              textEl.style.fontSize = `${currentSize}px`;
+            }
+          }
+        });
       }
 
       // 更新自製輸入條文字
@@ -1857,6 +1905,12 @@
               document.exitFullscreen();
             }
           }
+        });
+
+        // 視窗縮放或全螢幕切換時，自動重新計算題目最佳字級
+        window.addEventListener('resize', () => {
+          this.adjustQuestionFontSize(this.elBlueQuestionText, this.elBlueQuestionText.textContent);
+          this.adjustQuestionFontSize(this.elRedQuestionText, this.elRedQuestionText.textContent);
         });
 
         // 題庫設定彈窗互動
