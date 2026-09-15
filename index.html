@@ -269,7 +269,17 @@
       position: relative;
       transition: transform 0.2s ease, border-color 0.2s ease;
       border: 1px solid rgba(255, 255, 255, 0.12);
+      overflow-x: hidden !important;
       overflow-y: auto;
+      scrollbar-width: none; /* 隱藏原生橫向與縱向滾動軸 (Firefox) */
+      -ms-overflow-style: none; /* 隱藏原生橫向與縱向滾動軸 (IE / Edge) */
+    }
+
+    /* 徹底修掉原生橫軸與縱軸 (Chrome, Safari, Edge Webkit) */
+    .question-card::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
     }
 
     .team-blue .question-card {
@@ -350,6 +360,9 @@
       line-height: 1.4;
       color: #ffffff;
       word-break: break-word;
+      overflow-wrap: break-word;
+      box-sizing: border-box;
+      max-width: 100%;
       width: 100%;
       margin: auto 0;
       transition: font-size 0.2s ease;
@@ -661,22 +674,22 @@
 
     .center-label {
       position: absolute;
-      top: 14px;
+      top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(255, 190, 11, 0.18);
+      background: rgba(10, 16, 30, 0.88);
       color: var(--amber-plasma);
-      border: 1px solid var(--amber-plasma);
+      border: 2px solid var(--amber-plasma);
       font-family: 'Consolas', 'Courier New', monospace;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 3px 12px;
-      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 8px 26px;
+      border-radius: 24px;
       z-index: 4;
       white-space: nowrap;
-      letter-spacing: 1px;
-      box-shadow: 0 0 15px rgba(255, 190, 11, 0.3);
-      backdrop-filter: blur(4px);
+      letter-spacing: 3px;
+      box-shadow: 0 0 24px rgba(255, 190, 11, 0.6), inset 0 0 10px rgba(255, 190, 11, 0.2);
+      backdrop-filter: blur(8px);
     }
 
     /* 決勝警戒線（高能防禦力場光壁） */
@@ -704,28 +717,31 @@
 
     .boundary-tag {
       position: absolute;
-      bottom: 12px;
-      font-size: 11px;
+      bottom: 22px;
+      font-size: 20px;
       font-family: 'Consolas', 'Courier New', monospace;
-      font-weight: 800;
-      padding: 3px 10px;
-      border-radius: 4px;
+      font-weight: 900;
+      padding: 16px 8px;
+      border-radius: 12px;
       transform: translateX(-50%);
-      letter-spacing: 1px;
+      letter-spacing: 5px;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      white-space: nowrap;
+      background: rgba(10, 16, 30, 0.88);
+      backdrop-filter: blur(8px);
     }
 
     .win-boundary-blue .boundary-tag {
-      background: rgba(0, 240, 255, 0.15);
-      border: 1px solid rgba(0, 240, 255, 0.5);
+      border: 2px solid var(--cyan-neon);
       color: var(--cyan-neon);
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.6), inset 0 0 8px rgba(0, 240, 255, 0.25);
     }
 
     .win-boundary-red .boundary-tag {
-      background: rgba(255, 0, 85, 0.15);
-      border: 1px solid rgba(255, 0, 85, 0.5);
+      border: 2px solid var(--magenta-neon);
       color: var(--magenta-neon);
-      box-shadow: 0 0 10px rgba(255, 0, 85, 0.3);
+      box-shadow: 0 0 20px rgba(255, 0, 85, 0.6), inset 0 0 8px rgba(255, 0, 85, 0.25);
     }
 
     /* 動態位移之拔河隊伍與繩索集合體 */
@@ -1925,7 +1941,7 @@
         requestAnimationFrame(() => {
           const cardEl = textEl.closest('.question-card');
           if (cardEl) {
-            const availableHeight = cardEl.clientHeight - 46;
+            const availableHeight = cardEl.clientHeight - 54;
             let currentSize = fontSize;
             while (textEl.scrollHeight > availableHeight && currentSize > 14) {
               currentSize -= 1;
