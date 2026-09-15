@@ -1292,6 +1292,10 @@
     // 老師若要固定專屬題目，可直接修改下方陣列中的 question（題目）與 answer（答案）。
     // ==========================================================================
     const DEFAULT_QUESTION_BANK = [
+      { question: "長 48 公分、寬 36 公分的長方形紙張，要剪成大小相同且面積最大的正方形，正方形的邊長是幾公分？", answer: "12" },
+      { question: "小明每 4 天去一次圖書館，小華每 6 天去一次圖書館，今天兩人在圖書館相遇，最少幾天後他們會再次相遇？", answer: "12" },
+      { question: "有 45 顆蘋果和 75 顆橘子，平分裝進禮盒中，每盒的兩種水果數量都要一樣多，最多可以分裝成幾盒？", answer: "15" },
+      { question: "某站牌公車 A 每 10 分鐘發一班，公車 B 每 15 分鐘發一班，早上 8 點兩車同時發車，下一次同時發車是幾分鐘後？", answer: "30" },
       { question: "8 × 9 = ?", answer: "72" },
       { question: "125 ÷ 5 = ?", answer: "25" },
       { question: "48 + 57 = ?", answer: "105" },
@@ -1315,6 +1319,10 @@
     // 內建其他領域預設範本
     const PRESET_BANKS = {
       math: [
+        { question: "長 48 公分、寬 36 公分的長方形紙張，要剪成大小相同且面積最大的正方形，正方形的邊長是幾公分？", answer: "12" },
+        { question: "小明每 4 天去一次圖書館，小華每 6 天去一次圖書館，今天兩人在圖書館相遇，最少幾天後他們會再次相遇？", answer: "12" },
+        { question: "有 45 顆蘋果和 75 顆橘子，平分裝進禮盒中，每盒的兩種水果數量都要一樣多，最多可以分裝成幾盒？", answer: "15" },
+        { question: "某站牌公車 A 每 10 分鐘發一班，公車 B 每 15 分鐘發一班，早上 8 點兩車同時發車，下一次同時發車是幾分鐘後？", answer: "30" },
         { question: "8 × 9 = ?", answer: "72" },
         { question: "125 ÷ 5 = ?", answer: "25" },
         { question: "48 + 57 = ?", answer: "105" },
@@ -2001,18 +2009,27 @@
           const line = lines[idx].trim();
           if (!line) continue;
 
-          // 支援中文全形逗號或英文半形逗號分割
-          const splitParts = line.includes('，') ? line.split('，') : line.split(',');
-          if (splitParts.length < 2) {
-            alert(`第 ${idx + 1} 行格式不正確：\n"${line}"\n請使用「題目, 答案」格式！`);
+          // 支援以最後一個逗號（半形 , 或全形 ，）或 Tab 分隔題目與答案
+          // 關鍵修正：解決題目內容本身包含逗號（如「公車 A 每 10 分鐘...，公車 B 每 15 分鐘...」）時，題目被提前截斷的 Bug
+          const lastHalf = line.lastIndexOf(',');
+          const lastFull = line.lastIndexOf('，');
+          const lastTab = line.lastIndexOf('\t');
+          const lastCommaIdx = Math.max(lastHalf, lastFull, lastTab);
+
+          if (lastCommaIdx === -1) {
+            alert(`第 ${idx + 1} 行格式不正確：\n"${line}"\n請在題目與答案之間加上逗號隔開！\n範例：題目, 答案`);
             return;
           }
 
-          const qText = splitParts[0].trim();
-          const aText = splitParts.slice(1).join(',').trim(); // 避免答案內含逗號
-          if (qText && aText) {
-            parsedQuestions.push({ question: qText, answer: aText });
+          const qText = line.substring(0, lastCommaIdx).trim();
+          const aText = line.substring(lastCommaIdx + 1).trim();
+
+          if (!qText || !aText) {
+            alert(`第 ${idx + 1} 行格式不完整：題目或答案不可為空！\n"${line}"`);
+            return;
           }
+
+          parsedQuestions.push({ question: qText, answer: aText });
         }
 
         if (parsedQuestions.length === 0) {
