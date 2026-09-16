@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>大電視觸控雙人拔河對戰遊戲</title>
+  <!-- YouTube IFrame API 用於循環播放熱血背景音樂 -->
+  <script src="https://www.youtube.com/iframe_api"></script>
   <style>
     :root {
       /* 科技數學風核心調色盤 (Cyber Math HUD Palette) */
@@ -1235,6 +1237,11 @@
 </head>
 <body>
 
+  <!-- YouTube 背景音樂播放器（隱藏執行，不干擾對戰畫面） -->
+  <div id="ytBgmWrapper" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none;">
+    <div id="ytBgmPlayer"></div>
+  </div>
+
   <!-- 頂部控制列 -->
   <header>
     <div class="header-left">
@@ -1252,7 +1259,7 @@
     </div>
 
     <div class="header-right">
-      <button id="btnToggleSound" class="header-btn" title="切換音效">
+      <button id="btnToggleSound" class="header-btn" title="切換背景音樂與音效（支援一鍵靜音）">
         <span id="soundIcon">🔊 音效開</span>
       </button>
       <button id="btnFullscreen" class="header-btn" title="全螢幕切換">
@@ -1498,12 +1505,15 @@
 
       <!-- 題庫文字編輯區 -->
       <div class="form-group">
-        <label for="questionsInput">📝 編輯題庫（每行一題，格式：<code>題目, 答案</code>）：</label>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <label for="questionsInput">📝 編輯題庫（每行一題，格式：<code>題目, 答案</code>）：</label>
+          <span id="questionCountBadge" style="font-weight: 800; font-family: 'Consolas', monospace; font-size: 14px; color: var(--cyan-neon); background: rgba(0, 240, 255, 0.12); padding: 3px 12px; border-radius: 6px; border: 1px solid rgba(0, 240, 255, 0.35); box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);">目前題數：0 / 100 題</span>
+        </div>
         <div class="form-tip">
-          說明：在逗號（半形或全形皆可）左邊輸入題目，右邊輸入標準答案。<br>
+          說明：在逗號（半形 , 或全形 ，皆可）左邊輸入題目，右邊輸入標準答案。最多可放入 100 題（依答案數計算，不限字元數）。出過的題目在比賽中絕不重複！<br>
           範例：<code>8 × 9 = ?, 72</code> 或 <code>正方形有幾個直角？, 4</code>
         </div>
-        <textarea id="questionsInput" class="questions-textarea" spellcheck="false"></textarea>
+        <textarea id="questionsInput" class="questions-textarea" spellcheck="false" placeholder="每行一題，格式：題目, 答案（上限 100 題，不限字數）"></textarea>
       </div>
 
       <!-- 規則微調 -->
@@ -1699,11 +1709,110 @@
     const sound = new SoundFX();
 
     // ==========================================================================
+    // 🎵 YouTube 背景音樂循環播放管理器
+    // 循環播放指定曲目 (8h-fqAnIn0A)，支援首次觸控/點擊解鎖 Autoplay 與一鍵靜音切換
+    // ==========================================================================
+    class BackgroundMusicManager {
+      constructor(videoId) {
+        this.videoId = videoId;
+        this.player = null;
+        this.isReady = false;
+        this.enabled = true;
+        this.volume = 35; // 35% 音量，熱血襯底且不遮蓋 Web Audio 答對/答錯音效
+
+        this.init();
+      }
+
+      init() {
+        window.onYouTubeIframeAPIReady = () => {
+          try {
+            this.player = new YT.Player('ytBgmPlayer', {
+              videoId: this.videoId,
+              playerVars: {
+                autoplay: 1,
+                loop: 1,
+                playlist: this.videoId, // YouTube API 要求循環播放單一影片時需指定相同 videoId
+                controls: 0,
+                showinfo: 0,
+                rel: 0,
+                disablekb: 1,
+                fs: 0,
+                modestbranding: 1,
+                playsinline: 1
+              },
+              events: {
+                onReady: (event) => {
+                  this.isReady = true;
+                  event.target.setVolume(this.volume);
+                  if (this.enabled) {
+                    try {
+                      event.target.playVideo();
+                    } catch (e) {}
+                  }
+                },
+                onStateChange: (event) => {
+                  // 若影片播放完畢，強制重播以達到無縫循環效果
+                  if (event.data === YT.PlayerState.ENDED && this.enabled) {
+                    try {
+                      event.target.playVideo();
+                    } catch (e) {}
+                  }
+                },
+                onError: (err) => {
+                  console.warn('YouTube BGM 載入略過（離線環境或受學校網路防護限制）', err);
+                }
+              }
+            });
+          } catch (e) {
+            console.warn('YouTube Player 初始化異常', e);
+          }
+        };
+
+        // 瀏覽器 Autoplay 規範解鎖：在使用者第一次觸控或點擊螢幕任意位置時啟動音樂
+        const unlockAudio = () => {
+          this.play();
+        };
+        window.addEventListener('pointerdown', unlockAudio, { passive: true });
+        window.addEventListener('keydown', unlockAudio, { passive: true });
+      }
+
+      play() {
+        if (!this.enabled) return;
+        if (this.isReady && this.player && typeof this.player.playVideo === 'function') {
+          try {
+            this.player.setVolume(this.volume);
+            this.player.playVideo();
+          } catch (e) {}
+        }
+      }
+
+      pause() {
+        if (this.isReady && this.player && typeof this.player.pauseVideo === 'function') {
+          try {
+            this.player.pauseVideo();
+          } catch (e) {}
+        }
+      }
+
+      toggle(enabled) {
+        this.enabled = enabled;
+        if (this.enabled) {
+          this.play();
+        } else {
+          this.pause();
+        }
+      }
+    }
+
+    const bgm = new BackgroundMusicManager('8h-fqAnIn0A');
+
+    // ==========================================================================
     // 🎮 遊戲核心狀態管理
     // ==========================================================================
     class TugGame {
       constructor() {
         this.questions = [];
+        this.unplayedPool = []; // 尚未出過的題目抽籤池（保證全場不重複出題）
         this.winSteps = 5; // 預設淨領先 5 步獲勝
         this.currentStep = 0; // 0 為中線，負數代表藍隊領先，正數代表紅隊領先
         this.isGameOver = false;
@@ -1712,23 +1821,23 @@
         this.teamBlue = {
           name: "藍隊 TEAM 1",
           score: 0,
-          currentQuestionIndex: 0,
-          currentInput: "",
-          shuffledQuestions: []
+          questionCount: 0,
+          currentQ: null,
+          currentInput: ""
         };
 
         this.teamRed = {
           name: "紅隊 TEAM 2",
           score: 0,
-          currentQuestionIndex: 0,
-          currentInput: "",
-          shuffledQuestions: []
+          questionCount: 0,
+          currentQ: null,
+          currentInput: ""
         };
 
         this.initElements();
         this.loadQuestions();
         this.bindEvents();
-        this.startNewGame();
+        this.startNewGame(true);
       }
 
       initElements() {
@@ -1752,9 +1861,9 @@
         this.elRedKeypad = document.getElementById('redKeypad');
         this.elRedAthletes = document.getElementById('redAthletes');
 
-        // 中央場地 DOM
-        this.elTugAssembly = document.getElementById('tugAssembly');
+        // 競技場與裁判線
         this.elArenaStage = document.getElementById('arenaStage');
+        this.elTugAssembly = document.getElementById('tugAssembly');
         this.elStepsIndicator = document.getElementById('stepsIndicator');
         this.elWinThresholdDisplay = document.getElementById('winThresholdDisplay');
         this.elGameStatusBadge = document.getElementById('gameStatusBadge');
@@ -1775,6 +1884,7 @@
         this.elBtnOpenSettings = document.getElementById('btnOpenSettings');
         this.elBtnCloseModal = document.getElementById('btnCloseModal');
         this.elQuestionsInput = document.getElementById('questionsInput');
+        this.elQuestionCountBadge = document.getElementById('questionCountBadge');
         this.elSelectWinSteps = document.getElementById('selectWinSteps');
         this.elBtnSaveSettings = document.getElementById('btnSaveSettings');
         this.elBtnResetDefault = document.getElementById('btnResetDefault');
@@ -1843,23 +1953,45 @@
         this.questions = [...DEFAULT_QUESTION_BANK];
       }
 
-      // 重啟比賽
-      startNewGame() {
+      // 初始化未出題抽籤池（保證全場不重複出題）
+      initQuestionPool(forceReset = false) {
+        if (forceReset || !this.unplayedPool || this.unplayedPool.length < 2) {
+          this.unplayedPool = this.shuffle([...this.questions]);
+        }
+      }
+
+      // 從未出題庫中抽出一題（確保不重複）
+      drawNextQuestion(teamKey) {
+        // 若未出題庫已全數出完，自動以題庫重新補滿洗牌（排除對方當前正顯示的題目，避免撞題）
+        if (!this.unplayedPool || this.unplayedPool.length === 0) {
+          const opponentQ = teamKey === 'blue' ? (this.teamRed ? this.teamRed.currentQ : null) : (this.teamBlue ? this.teamBlue.currentQ : null);
+          const candidates = this.questions.filter(q => q !== opponentQ);
+          this.unplayedPool = this.shuffle(candidates.length > 0 ? candidates : [...this.questions]);
+        }
+
+        return this.unplayedPool.shift();
+      }
+
+      // 重啟比賽（forceReset: true 代表全新重設洗牌，false 代表接續未出題庫繼續出題）
+      startNewGame(forceReset = false) {
         this.isGameOver = false;
         this.currentStep = 0;
         this.winSteps = parseInt(this.elSelectWinSteps.value, 10) || 5;
         this.elWinThresholdDisplay.textContent = this.winSteps;
 
-        // 兩隊分別獨立洗牌題庫
+        // 初始化未出題庫池
+        this.initQuestionPool(forceReset);
+
+        // 重置兩隊計分與抽題（各自抽取不同且從未出過的題目）
         this.teamBlue.score = 0;
         this.teamBlue.currentInput = "";
-        this.teamBlue.currentQuestionIndex = 0;
-        this.teamBlue.shuffledQuestions = this.shuffle(this.questions);
+        this.teamBlue.questionCount = 1;
+        this.teamBlue.currentQ = this.drawNextQuestion('blue');
 
         this.teamRed.score = 0;
         this.teamRed.currentInput = "";
-        this.teamRed.currentQuestionIndex = 0;
-        this.teamRed.shuffledQuestions = this.shuffle(this.questions);
+        this.teamRed.questionCount = 1;
+        this.teamRed.currentQ = this.drawNextQuestion('red');
 
         this.elBlueScore.textContent = '0';
         this.elRedScore.textContent = '0';
@@ -1902,10 +2034,13 @@
         const tagEl = teamKey === 'blue' ? this.elBlueQuestionTag : this.elRedQuestionTag;
         const textEl = teamKey === 'blue' ? this.elBlueQuestionText : this.elRedQuestionText;
 
-        const currentQ = team.shuffledQuestions[team.currentQuestionIndex % team.shuffledQuestions.length];
-        tagEl.textContent = `第 ${team.currentQuestionIndex + 1} 題`;
-        textEl.textContent = currentQ.question;
-        this.adjustQuestionFontSize(textEl, currentQ.question);
+        if (!team.currentQ) {
+          team.currentQ = this.drawNextQuestion(teamKey);
+        }
+
+        tagEl.textContent = `第 ${team.questionCount} 題`;
+        textEl.textContent = team.currentQ.question;
+        this.adjustQuestionFontSize(textEl, team.currentQ.question);
       }
 
       // 依據字數多寡動態調整字體大小，確保能舒適容納 50 字以上長題且不溢位
@@ -2012,7 +2147,8 @@
           return;
         }
 
-        const currentQ = team.shuffledQuestions[team.currentQuestionIndex % team.shuffledQuestions.length];
+        const currentQ = team.currentQ;
+        if (!currentQ) return;
         const rawUser = team.currentInput;
         const rawCorrect = String(currentQ.answer || '');
 
@@ -2049,9 +2185,10 @@
           setTimeout(() => cardEl.classList.remove('success-pulse'), 400);
           this.triggerPullAnimation(teamKey);
 
-          // 切換下一題
+          // 切換下一題（抽取從未出過的新題目，保證全場不重複）
           team.currentInput = '';
-          team.currentQuestionIndex++;
+          team.questionCount++;
+          team.currentQ = this.drawNextQuestion(teamKey);
           this.updateAnswerDisplay(teamKey);
           this.renderQuestion(teamKey);
 
@@ -2174,23 +2311,25 @@
           if (btn) btn.classList.remove('pressed');
         });
 
-        // 重新開局按鈕
+        // 重新開局按鈕（全新重設題庫並洗牌開局）
         this.elBtnResetGame.addEventListener('click', () => {
           sound.initContext();
-          if (confirm('確定要重新開始本局拔河比賽嗎？')) {
-            this.startNewGame();
+          if (confirm('確定要重新開始本局拔河比賽嗎？（題庫將全數重新洗牌）')) {
+            this.startNewGame(true);
           }
         });
 
+        // 再來一局按鈕（接續剩餘未出題庫，保證不重複出題）
         this.elBtnRematch.addEventListener('click', () => {
-          this.startNewGame();
+          this.startNewGame(false);
         });
 
-        // 音效開關切換
+        // 音效與背景音樂開關切換（一鍵同步控制）
         this.elBtnToggleSound.addEventListener('click', () => {
           sound.initContext();
           sound.enabled = !sound.enabled;
           this.elSoundIcon.textContent = sound.enabled ? '🔊 音效開' : '🔇 靜音中';
+          bgm.toggle(sound.enabled);
         });
 
         // 全螢幕切換
@@ -2210,6 +2349,11 @@
         window.addEventListener('resize', () => {
           this.adjustQuestionFontSize(this.elBlueQuestionText, this.elBlueQuestionText.textContent);
           this.adjustQuestionFontSize(this.elRedQuestionText, this.elRedQuestionText.textContent);
+        });
+
+        // 題庫輸入文字變動時，即時更新題數計數器
+        this.elQuestionsInput.addEventListener('input', () => {
+          this.updateQuestionsCountBadge();
         });
 
         // 題庫設定彈窗互動
@@ -2232,6 +2376,7 @@
             localStorage.removeItem('tug_of_war_winsteps');
             this.loadQuestions();
             this.populateTextareaFromQuestions();
+            this.updateQuestionsCountBadge();
             alert('已恢復預設題庫！');
           }
         });
@@ -2269,6 +2414,7 @@
 
       openSettingsModal() {
         this.populateTextareaFromQuestions();
+        this.updateQuestionsCountBadge();
         this.elSelectWinSteps.value = this.winSteps;
         this.elSettingsModal.style.display = 'flex';
       }
@@ -2283,6 +2429,42 @@
         if (bank) {
           const lines = bank.map(q => `${q.question}, ${q.answer}`);
           this.elQuestionsInput.value = lines.join('\n');
+          this.updateQuestionsCountBadge();
+        }
+      }
+
+      // 即時計算並更新題庫題數計數器（以答案數計算，上限 100 題）
+      updateQuestionsCountBadge() {
+        if (!this.elQuestionsInput || !this.elQuestionCountBadge) return;
+        const rawText = this.elQuestionsInput.value.trim();
+        if (!rawText) {
+          this.elQuestionCountBadge.textContent = '目前題數：0 / 100 題';
+          this.elQuestionCountBadge.style.color = 'var(--cyan-neon)';
+          this.elQuestionCountBadge.style.borderColor = 'rgba(0, 240, 255, 0.35)';
+          return;
+        }
+
+        const lines = rawText.split('\n');
+        let count = 0;
+        for (let i = 0; i < lines.length; i++) {
+          const l = lines[i].trim();
+          if (!l) continue;
+          const lastHalf = l.lastIndexOf(',');
+          const lastFull = l.lastIndexOf('，');
+          const lastTab = l.lastIndexOf('\t');
+          if (Math.max(lastHalf, lastFull, lastTab) !== -1) {
+            count++;
+          }
+        }
+
+        if (count > 100) {
+          this.elQuestionCountBadge.textContent = `目前題數：${count} 題（已達上限 100 題，儲存時將保留前 100 題）`;
+          this.elQuestionCountBadge.style.color = 'var(--amber-plasma)';
+          this.elQuestionCountBadge.style.borderColor = 'var(--amber-plasma)';
+        } else {
+          this.elQuestionCountBadge.textContent = `目前題數：${count} / 100 題`;
+          this.elQuestionCountBadge.style.color = 'var(--cyan-neon)';
+          this.elQuestionCountBadge.style.borderColor = 'rgba(0, 240, 255, 0.35)';
         }
       }
 
@@ -2294,14 +2476,13 @@
         }
 
         const lines = rawText.split('\n');
-        const parsedQuestions = [];
+        let parsedQuestions = [];
 
         for (let idx = 0; idx < lines.length; idx++) {
           const line = lines[idx].trim();
           if (!line) continue;
 
           // 支援以最後一個逗號（半形 , 或全形 ，）或 Tab 分隔題目與答案
-          // 關鍵修正：解決題目內容本身包含逗號（如「公車 A 每 10 分鐘...，公車 B 每 15 分鐘...」）時，題目被提前截斷的 Bug
           const lastHalf = line.lastIndexOf(',');
           const lastFull = line.lastIndexOf('，');
           const lastTab = line.lastIndexOf('\t');
@@ -2328,6 +2509,13 @@
           return;
         }
 
+        // 上限 100 題（依答案數計算，不限字數）
+        let truncatedNotice = '';
+        if (parsedQuestions.length > 100) {
+          truncatedNotice = `\n（您輸入了 ${parsedQuestions.length} 道題，系統已依上限自動保留前 100 題）`;
+          parsedQuestions = parsedQuestions.slice(0, 100);
+        }
+
         this.questions = parsedQuestions;
         this.winSteps = parseInt(this.elSelectWinSteps.value, 10) || 5;
 
@@ -2340,8 +2528,8 @@
         }
 
         this.elSettingsModal.style.display = 'none';
-        alert(`題庫更新成功！共匯入 ${this.questions.length} 道題目。即刻開局！`);
-        this.startNewGame();
+        alert(`題庫更新成功！共匯入 ${this.questions.length} 道題目。${truncatedNotice}即刻開局！`);
+        this.startNewGame(true);
       }
     }
 
