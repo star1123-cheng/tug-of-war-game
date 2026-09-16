@@ -122,6 +122,57 @@
       transform: scale(0.96);
     }
 
+    /* 🎚️ 音量調節控制群組 (Cyber Volume HUD) */
+    .volume-control-group {
+      display: flex;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 6px;
+      padding: 3px 6px;
+      gap: 5px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .volume-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      padding: 5px 9px;
+      font-size: 13px;
+      font-weight: 800;
+      font-family: 'Consolas', monospace;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .volume-btn:hover {
+      background: rgba(0, 240, 255, 0.25);
+      border-color: var(--cyan-neon);
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .volume-btn:active {
+      transform: scale(0.92);
+    }
+
+    .volume-level-badge {
+      font-family: 'Consolas', monospace;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--cyan-neon);
+      min-width: 42px;
+      text-align: center;
+      padding: 0 2px;
+      user-select: none;
+    }
+
     .header-title {
       display: flex;
       flex-direction: column;
@@ -1259,6 +1310,12 @@
     </div>
 
     <div class="header-right">
+      <!-- 🎚️ 音量調節控制群組 -->
+      <div class="volume-control-group" title="調節背景音樂與音效音量">
+        <button id="btnVolumeDown" class="volume-btn" title="降低音量 (-10%)">🔉 -</button>
+        <span id="volumeLevelDisplay" class="volume-level-badge" title="目前音量">80%</span>
+        <button id="btnVolumeUp" class="volume-btn" title="提高音量 (+10%)">🔊 +</button>
+      </div>
       <button id="btnToggleSound" class="header-btn" title="切換背景音樂與音效（支援一鍵靜音）">
         <span id="soundIcon">🔊 音效開</span>
       </button>
@@ -1527,6 +1584,15 @@
         </select>
       </div>
 
+      <!-- 背景音樂與音效音量調節 -->
+      <div class="settings-row">
+        <span>🎵 背景音樂與音效音量：</span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <input type="range" id="modalVolumeSlider" min="0" max="100" step="5" value="80" style="width: 140px; cursor: pointer; accent-color: var(--cyan-neon);">
+          <span id="modalVolumeDisplay" style="font-family: 'Consolas', monospace; font-weight: 800; color: var(--cyan-neon); width: 44px; text-align: right;">80%</span>
+        </div>
+      </div>
+
       <div class="modal-footer">
         <button type="button" class="btn-secondary" id="btnResetDefault">恢復預設題庫</button>
         <button type="button" class="btn-primary" id="btnSaveSettings">儲存並重啟遊戲</button>
@@ -1619,6 +1685,11 @@
       constructor() {
         this.ctx = null;
         this.enabled = true;
+        this.volume = 80; // 預設 80% 音量，聲音宏亮飽滿
+      }
+
+      setVolume(vol) {
+        this.volume = Math.max(0, Math.min(100, vol));
       }
 
       initContext() {
@@ -1634,7 +1705,7 @@
       }
 
       playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.15) {
-        if (!this.enabled) return;
+        if (!this.enabled || this.volume <= 0) return;
         this.initContext();
         if (!this.ctx) return;
 
@@ -1644,7 +1715,9 @@
           osc.type = type;
           osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          // 根據全域音量百分比 (0~100) 等比例調節增益大小
+          const scaledGain = gainVal * (this.volume / 100);
+          gain.gain.setValueAtTime(Math.max(0.0001, scaledGain), this.ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
 
           osc.connect(gain);
@@ -1718,9 +1791,18 @@
         this.player = null;
         this.isReady = false;
         this.enabled = true;
-        this.volume = 35; // 35% 音量，熱血襯底且不遮蓋 Web Audio 答對/答錯音效
+        this.volume = 80; // 預設 80% 音量，大螢幕播放清晰飽滿且震撼
 
         this.init();
+      }
+
+      setVolume(vol) {
+        this.volume = Math.max(0, Math.min(100, vol));
+        if (this.isReady && this.player && typeof this.player.setVolume === 'function') {
+          try {
+            this.player.setVolume(this.volume);
+          } catch (e) {}
+        }
       }
 
       init() {
@@ -1816,6 +1898,7 @@
         this.winSteps = 5; // 預設淨領先 5 步獲勝
         this.currentStep = 0; // 0 為中線，負數代表藍隊領先，正數代表紅隊領先
         this.isGameOver = false;
+        this.currentVolume = 80; // 預設 80% 音量，聲音宏亮
 
         // 兩隊獨立狀態機
         this.teamBlue = {
@@ -1835,6 +1918,7 @@
         };
 
         this.initElements();
+        this.loadVolume();
         this.loadQuestions();
         this.bindEvents();
         this.startNewGame(true);
@@ -1879,6 +1963,13 @@
         this.elSoundIcon = document.getElementById('soundIcon');
         this.elBtnFullscreen = document.getElementById('btnFullscreen');
 
+        // 🎚️ 音量調節控制元件
+        this.elBtnVolumeDown = document.getElementById('btnVolumeDown');
+        this.elBtnVolumeUp = document.getElementById('btnVolumeUp');
+        this.elVolumeLevelDisplay = document.getElementById('volumeLevelDisplay');
+        this.elModalVolumeSlider = document.getElementById('modalVolumeSlider');
+        this.elModalVolumeDisplay = document.getElementById('modalVolumeDisplay');
+
         // 題庫設定彈窗
         this.elSettingsModal = document.getElementById('settingsModal');
         this.elBtnOpenSettings = document.getElementById('btnOpenSettings');
@@ -1894,6 +1985,63 @@
         this.elBtnPresetMeasure = document.getElementById('btnPresetMeasure');
         this.elBtnPresetIdiom = document.getElementById('btnPresetIdiom');
         this.elBtnPresetScience = document.getElementById('btnPresetScience');
+      }
+
+      // 載入儲存的音量（預設 80%）
+      loadVolume() {
+        const savedVol = localStorage.getItem('tug_of_war_volume');
+        if (savedVol !== null) {
+          const parsed = parseInt(savedVol, 10);
+          if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+            this.currentVolume = parsed;
+          }
+        }
+        this.applyVolume(this.currentVolume, false);
+      }
+
+      // 套用全域音量（同步 Web Audio 音效與 YouTube 背景音樂）
+      applyVolume(vol, saveToStorage = true) {
+        this.currentVolume = Math.max(0, Math.min(100, Math.round(vol)));
+
+        // 同步通知音效與背景音樂管理器
+        sound.setVolume(this.currentVolume);
+        bgm.setVolume(this.currentVolume);
+
+        // 更新頂部 HUD 與彈窗顯示
+        if (this.elVolumeLevelDisplay) {
+          this.elVolumeLevelDisplay.textContent = `${this.currentVolume}%`;
+        }
+        if (this.elModalVolumeSlider) {
+          this.elModalVolumeSlider.value = this.currentVolume;
+        }
+        if (this.elModalVolumeDisplay) {
+          this.elModalVolumeDisplay.textContent = `${this.currentVolume}%`;
+        }
+
+        // 當音量為 0% 時自動同步靜音狀態
+        if (this.currentVolume === 0) {
+          if (sound.enabled) {
+            sound.enabled = false;
+            bgm.toggle(false);
+            if (this.elSoundIcon) this.elSoundIcon.textContent = '🔇 靜音中';
+          }
+        } else {
+          // 當由 0% 調高音量時，若先前處於靜音中，自動解除靜音
+          if (!sound.enabled) {
+            sound.enabled = true;
+            bgm.toggle(true);
+            if (this.elSoundIcon) this.elSoundIcon.textContent = '🔊 音效開';
+          }
+        }
+
+        // 保存至 localStorage
+        if (saveToStorage) {
+          try {
+            localStorage.setItem('tug_of_war_volume', this.currentVolume.toString());
+          } catch (e) {
+            console.error(e);
+          }
+        }
       }
 
       // 洗牌演算法
@@ -2330,7 +2478,37 @@
           sound.enabled = !sound.enabled;
           this.elSoundIcon.textContent = sound.enabled ? '🔊 音效開' : '🔇 靜音中';
           bgm.toggle(sound.enabled);
+          // 若從靜音狀態重新開啟且當前音量為 0，自動恢復至預設 80%
+          if (sound.enabled && this.currentVolume === 0) {
+            this.applyVolume(80);
+          }
         });
+
+        // 🎚️ 音量調節：降低音量 (-10%)
+        if (this.elBtnVolumeDown) {
+          this.elBtnVolumeDown.addEventListener('click', () => {
+            sound.initContext();
+            this.applyVolume(this.currentVolume - 10);
+            sound.playClick();
+          });
+        }
+
+        // 🎚️ 音量調節：提高音量 (+10%)
+        if (this.elBtnVolumeUp) {
+          this.elBtnVolumeUp.addEventListener('click', () => {
+            sound.initContext();
+            this.applyVolume(this.currentVolume + 10);
+            sound.playClick();
+          });
+        }
+
+        // 🎚️ 彈窗內音量拖曳滑桿即時調節
+        if (this.elModalVolumeSlider) {
+          this.elModalVolumeSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10);
+            this.applyVolume(val);
+          });
+        }
 
         // 全螢幕切換
         this.elBtnFullscreen.addEventListener('click', () => {
@@ -2416,6 +2594,8 @@
         this.populateTextareaFromQuestions();
         this.updateQuestionsCountBadge();
         this.elSelectWinSteps.value = this.winSteps;
+        if (this.elModalVolumeSlider) this.elModalVolumeSlider.value = this.currentVolume;
+        if (this.elModalVolumeDisplay) this.elModalVolumeDisplay.textContent = `${this.currentVolume}%`;
         this.elSettingsModal.style.display = 'flex';
       }
 
