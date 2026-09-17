@@ -1501,6 +1501,11 @@
     <div id="ytBgmPlayer"></div>
   </div>
 
+  <!-- 瀏覽器 Autoplay 解鎖提示（當 F5 重新整理後瀏覽器靜音時提示，點擊螢幕任意處即自動消失並播放音樂） -->
+  <div id="audioUnlockBanner" style="display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(7, 10, 19, 0.94); border: 1.5px solid var(--cyan-neon); box-shadow: 0 0 20px rgba(0, 240, 255, 0.5); color: var(--cyan-neon); padding: 10px 24px; border-radius: 30px; font-size: 15px; font-weight: 800; z-index: 99999; cursor: pointer; backdrop-filter: blur(10px); letter-spacing: 1px; user-select: none;">
+    🎵 點擊螢幕任意處開始播放背景音樂
+  </div>
+
   <!-- 頂部控制列 -->
   <header>
     <div class="header-left">
@@ -2678,8 +2683,9 @@
           }
         }
         if (this.ctx && this.ctx.state === 'suspended') {
-          this.ctx.resume();
+          return this.ctx.resume();
         }
+        return Promise.resolve();
       }
 
       playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.15) {
@@ -2779,6 +2785,7 @@
         this.synthTimer = null;
         this.synthStep = 0;
         this.watchdogTimer = null;
+        this.pendingSynth = false;
 
         this.init();
       }
@@ -2794,6 +2801,20 @@
 
       isPlayingNow() {
         return this.isYouTubeActive || this.isSynthPlaying;
+      }
+
+      showUnlockPrompt() {
+        const el = document.getElementById('audioUnlockBanner');
+        if (el && this.enabled && !this.isPlayingNow()) {
+          el.style.display = 'block';
+        }
+      }
+
+      hideUnlockPrompt() {
+        const el = document.getElementById('audioUnlockBanner');
+        if (el) {
+          el.style.display = 'none';
+        }
       }
 
       init() {
@@ -2833,6 +2854,7 @@
                 onStateChange: (event) => {
                   if (event.data === YT.PlayerState.PLAYING) {
                     this.isYouTubeActive = true;
+                    this.hideUnlockPrompt();
                     this.stopSynth();
                   } else if (event.data === YT.PlayerState.ENDED && this.enabled) {
                     try {
@@ -2881,8 +2903,25 @@
 
         // 瀏覽器 Autoplay 規範解鎖：在使用者第一次點擊、觸控或按鍵時全面啟動音效與音樂
         const unlockAudio = () => {
-          sound.initContext();
-          this.play();
+          sound.initContext().then(() => {
+            this.hideUnlockPrompt();
+            if (this.enabled) {
+              if (this.pendingSynth || !this.isPlayingNow()) {
+                this.stopSynth();
+                this.play();
+              }
+            }
+          }).catch(() => {});
+
+          if (this.isReady && this.player && typeof this.player.unMute === 'function') {
+            try {
+              this.player.unMute();
+              this.player.setVolume(this.volume);
+              if (this.enabled) {
+                this.player.playVideo();
+              }
+            } catch (e) {}
+          }
         };
         window.addEventListener('pointerdown', unlockAudio, { passive: true });
         window.addEventListener('keydown', unlockAudio, { passive: true });
@@ -2892,33 +2931,37 @@
 
       play() {
         if (!this.enabled || this.volume <= 0) return;
-        sound.initContext();
 
-        // 優先嘗試 YouTube 播放
-        if (this.isReady && this.player && typeof this.player.playVideo === 'function') {
-          try {
-            this.player.unMute();
-            this.player.setVolume(this.volume);
-            this.player.playVideo();
-          } catch (e) {}
-        }
-
-        // 監控守護：若在 file:/// 協定或 1.2 秒內 YouTube 未進入播放狀態，啟動本地合成音樂備援
-        if (!this.isYouTubeActive) {
-          if (window.location.protocol === 'file:') {
-            this.startSynth();
-          } else {
-            if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
-            this.watchdogTimer = setTimeout(() => {
-              if (!this.isYouTubeActive && this.enabled) {
-                this.startSynth();
-              }
-            }, 1200);
+        sound.initContext().then(() => {
+          // 優先嘗試 YouTube 播放
+          if (this.isReady && this.player && typeof this.player.playVideo === 'function') {
+            try {
+              this.player.unMute();
+              this.player.setVolume(this.volume);
+              this.player.playVideo();
+            } catch (e) {}
           }
-        }
+
+          // 監控守護：若在 file:/// 協定或 1.0 秒內 YouTube 未進入播放狀態，啟動本地合成音樂備援
+          if (!this.isYouTubeActive) {
+            if (window.location.protocol === 'file:') {
+              this.startSynth();
+            } else {
+              if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+              this.watchdogTimer = setTimeout(() => {
+                if (!this.isYouTubeActive && this.enabled) {
+                  this.startSynth();
+                }
+              }, 1000);
+            }
+          }
+        }).catch(() => {
+          this.showUnlockPrompt();
+        });
       }
 
       pause() {
+        this.hideUnlockPrompt();
         if (this.watchdogTimer) {
           clearTimeout(this.watchdogTimer);
           this.watchdogTimer = null;
@@ -2945,6 +2988,13 @@
         if (this.isSynthPlaying || !this.enabled || this.volume <= 0) return;
         sound.initContext();
         if (!sound.ctx) return;
+        if (sound.ctx.state === 'suspended') {
+          this.pendingSynth = true;
+          this.showUnlockPrompt();
+          return;
+        }
+        this.pendingSynth = false;
+        this.hideUnlockPrompt();
         this.isSynthPlaying = true;
         this.synthStep = 0;
         this.scheduleSynthTick();
@@ -3438,6 +3488,24 @@
             answers: splitCandidates.length > 0 ? splitCandidates : [rawAns]
           };
         });
+
+        // 題庫成語挖空防損自我修復機制：徹底防範本機 localStorage 歷史快取損毀題目
+        const idiomAutoRepair = {
+          '「接二連」': '「接二連( )」',
+          '「( )上下」': '「( )上( )下」',
+          '「( )言鼎」': '「( )言( )鼎」',
+          '「垂涎尺」': '「垂涎( )尺」',
+          '「五顏色」': '「五顏( )色」',
+          '「( )全美」': '「( )全( )美」'
+        };
+        this.questions.forEach(q => {
+          if (!q || !q.question) return;
+          for (const [broken, fixed] of Object.entries(idiomAutoRepair)) {
+            if (q.question.includes(broken) && !q.question.includes(fixed)) {
+              q.question = q.question.replace(broken, fixed);
+            }
+          }
+        });
       }
 
       // 初始化未出題抽籤池（保證全場不重複出題）
@@ -3530,7 +3598,20 @@
 
         tagEl.textContent = `第 ${team.questionCount} 題`;
 
-        const rawQ = team.currentQ.question;
+        let rawQ = team.currentQ.question;
+        const idiomAutoRepair = {
+          '「接二連」': '「接二連( )」',
+          '「( )上下」': '「( )上( )下」',
+          '「( )言鼎」': '「( )言( )鼎」',
+          '「垂涎尺」': '「垂涎( )尺」',
+          '「五顏色」': '「五顏( )色」',
+          '「( )全美」': '「( )全( )美」'
+        };
+        for (const [broken, fixed] of Object.entries(idiomAutoRepair)) {
+          if (rawQ.includes(broken) && !rawQ.includes(fixed)) {
+            rawQ = rawQ.replace(broken, fixed);
+          }
+        }
         const cleanQ = ZhuyinEngine.stripManualOverrides(rawQ);
 
         if (this.currentMode === 'zhuyin') {
@@ -4046,11 +4127,25 @@
       }
 
       populateTextareaFromQuestions() {
+        const idiomAutoRepair = {
+          '「接二連」': '「接二連( )」',
+          '「( )上下」': '「( )上( )下」',
+          '「( )言鼎」': '「( )言( )鼎」',
+          '「垂涎尺」': '「垂涎( )尺」',
+          '「五顏色」': '「五顏( )色」',
+          '「( )全美」': '「( )全( )美」'
+        };
         const lines = this.questions.map(q => {
-          if (Array.isArray(q.answers) && q.answers.length > 0) {
-            return `${q.question}, ${q.answers.join(', ')}`;
+          let qText = q.question;
+          for (const [broken, fixed] of Object.entries(idiomAutoRepair)) {
+            if (qText.includes(broken) && !qText.includes(fixed)) {
+              qText = qText.replace(broken, fixed);
+            }
           }
-          return `${q.question}, ${q.answer}`;
+          if (Array.isArray(q.answers) && q.answers.length > 0) {
+            return `${qText}, ${q.answers.join(', ')}`;
+          }
+          return `${qText}, ${q.answer}`;
         });
         this.elQuestionsInput.value = lines.join('\n');
       }
