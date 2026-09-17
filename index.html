@@ -242,14 +242,14 @@
       display: inline-flex;
       align-items: center;
       vertical-align: middle;
-      margin: 0 4px;
+      margin: 0 6px; /* 加大左右間隔，徹底防止與減號或運算子黏連 */
       line-height: 1;
     }
 
     .frac-whole {
       font-size: 1.15em;
       font-weight: 900;
-      margin-right: 4px;
+      margin-right: 5px;
       color: #ffffff;
     }
 
@@ -271,7 +271,7 @@
 
     .frac-bar {
       width: 100%;
-      min-width: 16px;
+      min-width: 18px;
       height: 2px;
       background: currentColor;
       margin: 2px 0;
@@ -286,10 +286,18 @@
       color: var(--cyan-neon);
     }
 
+    /* 數學運算子樣式：確保加減乘除與分數有安全間距 */
+    .math-op {
+      display: inline-block;
+      margin: 0 6px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
     /* 🔤 注音渲染樣式 (Zhuyin Typography) */
     .bb-zhuyin-inline {
       display: inline;
-      line-height: 1.6;
+      line-height: 1.8; /* 擴大行高，避免注音聲調與上一行文字重疊碰撞 */
     }
 
     .bb-zhuyin-pair {
@@ -299,7 +307,7 @@
       line-height: 1;
       vertical-align: middle;
       white-space: nowrap;
-      margin: 0 1px;
+      margin: 0 2px; /* 增加字與字間距，低年級辨讀更舒適 */
     }
 
     .bb-hanzi-slot {
@@ -1769,14 +1777,14 @@
       <!-- 題庫文字編輯區 -->
       <div class="form-group">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-          <label for="questionsInput">📝 編輯題庫（每行一題，格式：<code>題目, 答案</code>）：</label>
+          <label for="questionsInput">📝 編輯題庫（每行一題，支援一題多解多答案）：</label>
           <span id="questionCountBadge" style="font-weight: 800; font-family: 'Consolas', monospace; font-size: 14px; color: var(--cyan-neon); background: rgba(0, 240, 255, 0.12); padding: 3px 12px; border-radius: 6px; border: 1px solid rgba(0, 240, 255, 0.35); box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);">目前題數：0 / 100 題</span>
         </div>
         <div class="form-tip">
-          說明：在逗號（半形 , 或全形 ，皆可）左邊輸入題目，右邊輸入標準答案。最多可放入 100 題（依答案數計算，不限字元數）。出過的題目在比賽中絕不重複！<br>
-          範例：<code>8 × 9 = ?, 72</code> 或 <code>正方形有幾個直角？, 4</code>
+          說明：每行一題。在題目後面以逗號、分號或「或」隔開答案。<strong>支援一個問題填寫多個答案</strong>（例如：<code>1公升等於幾毫升？, 1000, 1000毫升, 1000ml</code> 或 <code>5/3 化為帶分數是？, 1又2/3, 5/3</code>），學生作答時輸入其中任一答案皆判定為正確！上限 100 題。<br>
+          範例：<code>8 × 9 = ?, 72</code> 或 <code>1公尺等於幾公分？, 100, 100公分, 100cm</code>
         </div>
-        <textarea id="questionsInput" class="questions-textarea" spellcheck="false" placeholder="每行一題，格式：題目, 答案（上限 100 題，不限字數）"></textarea>
+        <textarea id="questionsInput" class="questions-textarea" spellcheck="false" placeholder="每行一題，格式：題目, 答案1, 答案2...（支援一題多解，上限 100 題）"></textarea>
       </div>
 
       <!-- 規則微調 -->
@@ -1808,6 +1816,74 @@
 
   <!-- JavaScript 核心邏輯 -->
   <script>
+    // ==========================================================================
+    // 🧠 智慧題目與多答案解析器 (Question & Multi-Answer Parser)
+    // 支援一題多解：題目, 答案1, 答案2... 或以分號、Tab、「或」分隔
+    // 嚴格保留分數線 /，絕不破壞分數語法
+    // ==========================================================================
+    function parseQuestionLine(rawLine) {
+      const line = (rawLine || '').trim();
+      if (!line) return null;
+
+      let qText = '';
+      let aSection = '';
+
+      // 1. 若含有 Tab（試算表複製貼上），優先以 Tab 分隔題目與答案
+      if (line.includes('\t')) {
+        const parts = line.split('\t').map(p => p.trim()).filter(p => p.length > 0);
+        if (parts.length >= 2) {
+          qText = parts[0];
+          aSection = parts.slice(1).join(',');
+        }
+      }
+
+      // 2. 若尚未切分，檢查是否有問號（？或 ?），且問號後有逗號、分號或空白
+      if (!qText) {
+        const qMarkMatch = line.match(/^([\s\S]+?[？\?])(?:[,\s，;；|]+)([\s\S]+)$/);
+        if (qMarkMatch) {
+          qText = qMarkMatch[1].trim();
+          aSection = qMarkMatch[2].trim();
+        }
+      }
+
+      // 3. 若尚未切分，檢查是否含有分號（; 或 ；）或管線符號（|）
+      if (!qText && (line.includes(';') || line.includes('；') || line.includes('|'))) {
+        const firstComma = line.search(/[,，]/);
+        if (firstComma !== -1) {
+          qText = line.substring(0, firstComma).trim();
+          aSection = line.substring(firstComma + 1).trim();
+        } else {
+          const firstSemi = line.search(/[;；|]/);
+          qText = line.substring(0, firstSemi).trim();
+          aSection = line.substring(firstSemi + 1).trim();
+        }
+      }
+
+      // 4. 若尚未切分，尋找第一個逗號（半形 , 或全形 ，）
+      if (!qText) {
+        const firstComma = line.search(/[,，]/);
+        if (firstComma !== -1) {
+          qText = line.substring(0, firstComma).trim();
+          aSection = line.substring(firstComma + 1).trim();
+        }
+      }
+
+      if (!qText || !aSection) return null;
+
+      // 解析答案區段中的所有有效答案
+      // 支援以半形逗號、全形逗號、半形分號、全形分號、管線符號 或「 或 」切分多重答案
+      // 注意：絕對不可用斜線 / 切分，因為 / 是分數的表示符號（例如 1/2 或 1又1/2）！
+      const rawAnswers = aSection.split(/[,，;；|]|\s+或\s+/);
+      const answers = rawAnswers.map(a => a.trim()).filter(a => a.length > 0);
+      if (answers.length === 0) return null;
+
+      return {
+        question: qText,
+        answer: answers[0],
+        answers: answers
+      };
+    }
+
     // ==========================================================================
     // 🎯【四大版本專屬預設題庫】
     // 各版本題庫完全獨立，儲存於獨立 localStorage 鍵名，彼此絕不相互覆蓋
@@ -1951,14 +2027,16 @@
       formatToHTML(text) {
         if (!text) return '';
         let s = String(text);
-        // 帶分數：例如 1又1/2 或 1 1/2 或 1-1/2
-        s = s.replace(/(\d+)\s*(?:又|\s+|-)\s*(\d+)\/(\d+)/g, (match, whole, num, den) => {
+        // 1. 帶分數：嚴格限定「又」或空格分隔，絕不可納入減號 -，防止將 1 - 3/7 誤判為帶分數！
+        s = s.replace(/(\d+)\s*(?:又|\s+)\s*(\d+)\/(\d+)/g, (match, whole, num, den) => {
           return `<span class="frac-wrap"><span class="frac-whole">${whole}</span><span class="frac-sub"><span class="frac-num">${num}</span><span class="frac-bar"></span><span class="frac-den">${den}</span></span></span>`;
         });
-        // 純分數：例如 3/4
+        // 2. 純分數：例如 3/4
         s = s.replace(/(\d+)\/(\d+)/g, (match, num, den) => {
           return `<span class="frac-wrap"><span class="frac-sub"><span class="frac-num">${num}</span><span class="frac-bar"></span><span class="frac-den">${den}</span></span></span>`;
         });
+        // 3. 數學運算符號（+、-、−、×、÷、=、＝）優化間隔，防止緊黏直式分數橫線
+        s = s.replace(/([0-9\u4e00-\u9fa5\)>])\s*([+\-−×÷=＝])\s*([0-9\u4e00-\u9fa5\(<])/g, '$1 <span class="math-op">$2</span> $3');
         return s;
       },
 
@@ -1966,8 +2044,8 @@
       parseValue(str) {
         if (!str) return NaN;
         const s = String(str).trim().replace(/，/g, ',').replace(/／/g, '/');
-        // 帶分數：例如 1又1/2 或 1 1/2
-        const mixedMatch = s.match(/^(\d+)\s*(?:又|\s+|-)\s*(\d+)\/(\d+)$/);
+        // 帶分數：例如 1又1/2 或 1 1/2（絕不含減號 -）
+        const mixedMatch = s.match(/^(\d+)\s*(?:又|\s+)\s*(\d+)\/(\d+)$/);
         if (mixedMatch) {
           const w = parseInt(mixedMatch[1], 10);
           const n = parseInt(mixedMatch[2], 10);
@@ -2100,7 +2178,7 @@
 
         return `<span class="bb-zhuyin-pair" data-zhuyin-char="${char}">` +
           `<span class="bb-hanzi-slot">${char}</span>` +
-          `<span class="bb-zhuyin-track" aria-hidden="true" style="font-size:0.36em; width:2.2em; margin-left:0.12em;">` +
+          `<span class="bb-zhuyin-track" aria-hidden="true" style="font-size:0.42em; width:2.4em; margin-left:0.14em;">` +
           cells.join('') +
           `</span></span>`;
       },
@@ -2655,16 +2733,31 @@
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length > 0) {
               this.questions = parsed;
-              return;
             }
           } catch (e) {
             console.error('題庫載入異常，改用預設題庫', e);
           }
         }
 
-        // 載入當前版本模式的專屬預設題庫
-        const bank = DEFAULT_BANKS[this.currentMode] || DEFAULT_BANKS.standard;
-        this.questions = [...bank];
+        if (!this.questions || this.questions.length === 0) {
+          // 載入當前版本模式的專屬預設題庫
+          const bank = DEFAULT_BANKS[this.currentMode] || DEFAULT_BANKS.standard;
+          this.questions = [...bank];
+        }
+
+        // 正規化多答案支援：確保每一道題目皆具備 answers 陣列（相容歷史資料或包含逗號多解的格式）
+        this.questions = this.questions.map(q => {
+          if (Array.isArray(q.answers) && q.answers.length > 0) {
+            return q;
+          }
+          const rawAns = String(q.answer || '').trim();
+          const splitCandidates = rawAns.split(/[,，;；|]|\s+或\s+/).map(a => a.trim()).filter(a => a.length > 0);
+          return {
+            question: q.question,
+            answer: splitCandidates[0] || rawAns,
+            answers: splitCandidates.length > 0 ? splitCandidates : [rawAns]
+          };
+        });
       }
 
       // 初始化未出題抽籤池（保證全場不重複出題）
@@ -2774,26 +2867,26 @@
         let fontSize = 32;
         let lineHeight = 1.35;
 
-        // 注音版因包含注音軌道，基礎字級稍微調大讓拼讀更清晰
+        // 注音版因包含注音軌道且專為低年級學童設計，字級全面大幅放大以增進拼讀體驗
         const isZhuyin = this.currentMode === 'zhuyin';
 
         if (len <= 8) {
-          fontSize = isZhuyin ? 36 : 38;
-          lineHeight = isZhuyin ? 1.5 : 1.3;
+          fontSize = isZhuyin ? 44 : 38;
+          lineHeight = isZhuyin ? 1.6 : 1.3;
         } else if (len <= 16) {
-          fontSize = isZhuyin ? 30 : 32;
-          lineHeight = isZhuyin ? 1.5 : 1.35;
+          fontSize = isZhuyin ? 36 : 32;
+          lineHeight = isZhuyin ? 1.6 : 1.35;
         } else if (len <= 28) {
-          fontSize = isZhuyin ? 24 : 26;
-          lineHeight = isZhuyin ? 1.5 : 1.4;
+          fontSize = isZhuyin ? 28 : 26;
+          lineHeight = isZhuyin ? 1.6 : 1.4;
         } else if (len <= 45) {
-          fontSize = isZhuyin ? 20 : 22;
-          lineHeight = isZhuyin ? 1.5 : 1.45;
+          fontSize = isZhuyin ? 24 : 22;
+          lineHeight = isZhuyin ? 1.55 : 1.45;
         } else if (len <= 65) {
-          fontSize = isZhuyin ? 18 : 19;
+          fontSize = isZhuyin ? 21 : 19;
           lineHeight = isZhuyin ? 1.5 : 1.45;
         } else {
-          fontSize = isZhuyin ? 15 : 16;
+          fontSize = isZhuyin ? 18 : 16;
           lineHeight = isZhuyin ? 1.45 : 1.4;
         }
 
@@ -2806,7 +2899,8 @@
           if (cardEl) {
             const availableHeight = cardEl.clientHeight - 54;
             let currentSize = fontSize;
-            while (textEl.scrollHeight > availableHeight && currentSize > 14) {
+            const minSize = isZhuyin ? 16 : 14;
+            while (textEl.scrollHeight > availableHeight && currentSize > minSize) {
               currentSize -= 1;
               textEl.style.fontSize = `${currentSize}px`;
             }
@@ -2886,7 +2980,7 @@
           .toLowerCase();
       }
 
-      // 驗證答案（支援四版本專屬答題比對：小數數值等價、分數帶假互換）
+      // 驗證答案（支援四版本專屬答題比對：支援一題多解、小數數值等價、分數帶假互換）
       submitAnswer(teamKey) {
         const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
         const boxEl = teamKey === 'blue' ? this.elBlueAnswerBox : this.elRedAnswerBox;
@@ -2899,40 +2993,56 @@
         const currentQ = team.currentQ;
         if (!currentQ) return;
         const rawUser = team.currentInput.trim();
-        const rawCorrect = String(currentQ.answer || '').trim();
+
+        // 取得當前題目的所有有效答案候選清單（支援一題多解多答案）
+        let candidateAnswers = [];
+        if (Array.isArray(currentQ.answers) && currentQ.answers.length > 0) {
+          candidateAnswers = currentQ.answers.map(a => String(a).trim()).filter(a => a.length > 0);
+        } else if (currentQ.answer) {
+          const rawAnsStr = String(currentQ.answer).trim();
+          const splitList = rawAnsStr.split(/[,，;；|]|\s+或\s+/).map(a => a.trim()).filter(a => a.length > 0);
+          candidateAnswers = splitList.length > 0 ? splitList : [rawAnsStr];
+        }
 
         let isCorrect = false;
 
-        if (this.currentMode === 'fraction') {
-          // 分數版本：支援帶分數、假分數等值認定（如 1又1/2 與 3/2）
-          isCorrect = FractionEngine.isEquivalent(rawUser, rawCorrect);
-        } else if (this.currentMode === 'decimal') {
-          // 小數版本：支援字串精確比對 或 浮點數值等價（如 0.5 與 .5）
-          if (rawUser === rawCorrect) {
-            isCorrect = true;
-          } else {
+        for (let rawCorrect of candidateAnswers) {
+          if (this.currentMode === 'fraction') {
+            // 分數版本：支援帶分數、假分數等值認定（如 1又1/2 與 3/2）
+            if (FractionEngine.isEquivalent(rawUser, rawCorrect)) {
+              isCorrect = true;
+              break;
+            }
+          } else if (this.currentMode === 'decimal') {
+            // 小數版本：支援字串精確比對 或 浮點數值等價（如 0.5 與 .5）
+            if (rawUser === rawCorrect) {
+              isCorrect = true;
+              break;
+            }
             const valU = parseFloat(rawUser);
             const valC = parseFloat(rawCorrect);
             if (!isNaN(valU) && !isNaN(valC) && Math.abs(valU - valC) < 1e-5) {
               isCorrect = true;
+              break;
+            }
+          } else {
+            // 標準版與低年級注音版常規驗證
+            const userClean = this.normalizeAnswer(rawUser);
+            const correctClean = this.normalizeAnswer(rawCorrect);
+
+            // 1. 完全一致
+            if (userClean === correctClean) {
+              isCorrect = true;
+              break;
+            }
+
+            // 2. 防呆：若答案包含中文單位（如「30分鐘」或「12公分」），比對純數字部分
+            const correctDigitsOnly = correctClean.replace(/[^0-9a-z]/g, '');
+            if (correctDigitsOnly && userClean === correctDigitsOnly) {
+              isCorrect = true;
+              break;
             }
           }
-        } else {
-          // 標準版與低年級注音版常規驗證
-          const userClean = this.normalizeAnswer(rawUser);
-          let correctClean = this.normalizeAnswer(rawCorrect);
-
-          // 防呆 1：若答案依然夾帶逗號或問號（舊資料未清理），自動擷取最後一部分作為答案
-          if (correctClean.includes('，') || correctClean.includes(',') || correctClean.includes('？') || correctClean.includes('?')) {
-            const splitParts = rawCorrect.split(/[,，]/);
-            if (splitParts.length > 1) {
-              correctClean = this.normalizeAnswer(splitParts[splitParts.length - 1]);
-            }
-          }
-
-          // 防呆 2：若題目答案包含中文單位（如「30分鐘」或「12公分」），比對純數字部分
-          const correctDigitsOnly = correctClean.replace(/[^0-9a-z]/g, '');
-          isCorrect = (userClean === correctClean) || (correctDigitsOnly && userClean === correctDigitsOnly);
         }
 
         if (isCorrect) {
@@ -3244,14 +3354,24 @@
       }
 
       populateTextareaFromQuestions() {
-        const lines = this.questions.map(q => `${q.question}, ${q.answer}`);
+        const lines = this.questions.map(q => {
+          if (Array.isArray(q.answers) && q.answers.length > 0) {
+            return `${q.question}, ${q.answers.join(', ')}`;
+          }
+          return `${q.question}, ${q.answer}`;
+        });
         this.elQuestionsInput.value = lines.join('\n');
       }
 
       applyPreset(presetKey) {
         const bank = PRESET_BANKS[presetKey];
         if (bank) {
-          const lines = bank.map(q => `${q.question}, ${q.answer}`);
+          const lines = bank.map(q => {
+            if (Array.isArray(q.answers) && q.answers.length > 0) {
+              return `${q.question}, ${q.answers.join(', ')}`;
+            }
+            return `${q.question}, ${q.answer}`;
+          });
           this.elQuestionsInput.value = lines.join('\n');
           this.updateQuestionsCountBadge();
         }
@@ -3271,12 +3391,8 @@
         const lines = rawText.split('\n');
         let count = 0;
         for (let i = 0; i < lines.length; i++) {
-          const l = lines[i].trim();
-          if (!l) continue;
-          const lastHalf = l.lastIndexOf(',');
-          const lastFull = l.lastIndexOf('，');
-          const lastTab = l.lastIndexOf('\t');
-          if (Math.max(lastHalf, lastFull, lastTab) !== -1) {
+          const parsed = parseQuestionLine(lines[i]);
+          if (parsed) {
             count++;
           }
         }
@@ -3306,26 +3422,13 @@
           const line = lines[idx].trim();
           if (!line) continue;
 
-          // 支援以最後一個逗號（半形 , 或全形 ，）或 Tab 分隔題目與答案
-          const lastHalf = line.lastIndexOf(',');
-          const lastFull = line.lastIndexOf('，');
-          const lastTab = line.lastIndexOf('\t');
-          const lastCommaIdx = Math.max(lastHalf, lastFull, lastTab);
-
-          if (lastCommaIdx === -1) {
-            alert(`第 ${idx + 1} 行格式不正確：\n"${line}"\n請在題目與答案之間加上逗號隔開！\n範例：題目, 答案`);
+          const parsed = parseQuestionLine(line);
+          if (!parsed) {
+            alert(`第 ${idx + 1} 行格式不正確：\n"${line}"\n請在題目與答案之間加上逗號隔開！\n範例：題目, 答案 或 題目, 答案1, 答案2`);
             return;
           }
 
-          const qText = line.substring(0, lastCommaIdx).trim();
-          const aText = line.substring(lastCommaIdx + 1).trim();
-
-          if (!qText || !aText) {
-            alert(`第 ${idx + 1} 行格式不完整：題目或答案不可為空！\n"${line}"`);
-            return;
-          }
-
-          parsedQuestions.push({ question: qText, answer: aText });
+          parsedQuestions.push(parsed);
         }
 
         if (parsedQuestions.length === 0) {
