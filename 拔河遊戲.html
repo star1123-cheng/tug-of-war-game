@@ -2031,19 +2031,26 @@
     // 支援真分數、假分數、帶分數即時排版轉換與等值計算驗證
     // ==========================================================================
     const FractionEngine = {
-      // 將字串中的分數語法轉換為直式 HTML 結構，保持大螢幕文字不破版
+      // 將字串中的分數語法轉換為直式 HTML 結構，保持大螢幕文字不破版（內建 XSS 安全跳脫防護）
       formatToHTML(text) {
         if (!text) return '';
-        let s = String(text);
-        // 1. 帶分數：嚴格限定「又」或空格分隔，絕不可納入減號 -，防止將 1 - 3/7 誤判為帶分數！
+        // 1. 嚴格 HTML 實體跳脫，防範 XSS 跨站腳本注入
+        let s = String(text)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+        // 2. 帶分數：嚴格限定「又」或空格分隔，絕不可納入減號 -，防止將 1 - 3/7 誤判為帶分數！
         s = s.replace(/(\d+)\s*(?:又|\s+)\s*(\d+)\/(\d+)/g, (match, whole, num, den) => {
           return `<span class="frac-wrap"><span class="frac-whole">${whole}</span><span class="frac-sub"><span class="frac-num">${num}</span><span class="frac-bar"></span><span class="frac-den">${den}</span></span></span>`;
         });
-        // 2. 純分數：例如 3/4
+        // 3. 純分數：例如 3/4
         s = s.replace(/(\d+)\/(\d+)/g, (match, num, den) => {
           return `<span class="frac-wrap"><span class="frac-sub"><span class="frac-num">${num}</span><span class="frac-bar"></span><span class="frac-den">${den}</span></span></span>`;
         });
-        // 3. 數學運算符號（+、-、−、×、÷、=、＝）優化間隔，防止緊黏直式分數橫線
+        // 4. 數學運算符號（+、-、−、×、÷、=、＝）優化間隔，防止緊黏直式分數橫線
         s = s.replace(/([0-9\u4e00-\u9fa5\)>])\s*([+\-−×÷=＝])\s*([0-9\u4e00-\u9fa5\(<])/g, '$1 <span class="math-op">$2</span> $3');
         return s;
       },
@@ -2634,8 +2641,14 @@
             }
             html += this.buildCharHTML(item.char, zy);
           } else {
-            // 標點符號、數字、英文字母直接輸出
-            html += `<span class="bb-ascii-slot">${item.char}</span>`;
+            // 標點符號、數字、英文字母安全跳脫後輸出
+            const safeChar = String(item.char)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;');
+            html += `<span class="bb-ascii-slot">${safeChar}</span>`;
           }
         }
 
