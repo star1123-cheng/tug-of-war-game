@@ -1784,7 +1784,8 @@
         </div>
         <div class="form-tip">
           說明：每行一題。在題目後面以逗號、分號或「或」隔開答案。<strong>支援一個問題填寫多個答案</strong>（例如：<code>1公升等於幾毫升？, 1000, 1000毫升, 1000ml</code> 或 <code>5/3 化為帶分數是？, 1又2/3, 5/3</code>），學生作答時輸入其中任一答案皆判定為正確！上限 100 題。<br>
-          範例：<code>8 × 9 = ?, 72</code> 或 <code>1公尺等於幾公分？, 100, 100公分, 100cm</code>
+          範例：<code>8 × 9 = ?, 72</code> 或 <code>1公尺等於幾公分？, 100, 100公分, 100cm</code><br>
+          💡 <strong>注音版破音字提示</strong>：系統已內建詞組語境自動辨識；若欲強制指定特定讀音，可在題目漢字後加中括號，例如：<code>長[ㄓㄤˇ]大後的長方形</code>。
         </div>
         <textarea id="questionsInput" class="questions-textarea" spellcheck="false" placeholder="每行一題，格式：題目, 答案1, 答案2...（支援一題多解，上限 100 題）"></textarea>
       </div>
@@ -1923,8 +1924,8 @@
         { question: "1.2 × 5 = ?", answer: "6" },
         { question: "7.2 ÷ 9 = ?", answer: "0.8" },
         { question: "4.8 ÷ 4 = ?", answer: "1.2" },
-        { question: "3 公尺 50 公分是幾公尺？", answer: "3.5" },
-        { question: "1 公斤 200 公克是幾公斤？", answer: "1.2" },
+        { question: "3 公尺 50 公分是幾公尺？", answer: "3.5", answers: ["3.5", "3.5公尺", "3.5m"] },
+        { question: "1 公斤 200 公克是幾公斤？", answer: "1.2", answers: ["1.2", "1.2公斤", "1.2kg"] },
         { question: "0.6 的 10 倍是多少？", answer: "6" },
         { question: "35 個 0.1 合起來是多少？", answer: "3.5" },
         { question: "0.75 + 0.25 = ?", answer: "1" },
@@ -1934,7 +1935,7 @@
         { question: "0.8 ÷ 2 = ?", answer: "0.4" },
         { question: "15.6 + 4.4 = ?", answer: "20" },
         { question: "0.1 × 0.1 = ?", answer: "0.01" },
-        { question: "5 公升 400 毫升是幾公升？", answer: "5.4" },
+        { question: "5 公升 400 毫升是幾公升？", answer: "5.4", answers: ["5.4", "5.4公升", "5.4l", "5.4L"] },
         { question: "6 個 1 和 8 個 0.1 合起來是多少？", answer: "6.8" }
       ],
       fraction: [
@@ -1942,22 +1943,22 @@
         { question: "7/9 - 4/9 = ?", answer: "3/9" },
         { question: "1 - 3/7 = ?", answer: "4/7" },
         { question: "1/4 + 3/4 = ?", answer: "1" },
-        { question: "5/3 化為帶分數是？", answer: "1又2/3" },
-        { question: "7/4 化為帶分數是？", answer: "1又3/4" },
+        { question: "5/3 化為帶分數是？", answer: "1又2/3", answers: ["1又2/3", "1 2/3"] },
+        { question: "7/4 化為帶分數是？", answer: "1又3/4", answers: ["1又3/4", "1 3/4"] },
         { question: "1又1/2 + 1/2 = ?", answer: "2" },
-        { question: "2又1/3 + 1又1/3 = ?", answer: "3又2/3" },
-        { question: "3又4/5 - 1又1/5 = ?", answer: "2又3/5" },
+        { question: "2又1/3 + 1又1/3 = ?", answer: "3又2/3", answers: ["3又2/3", "3 2/3"] },
+        { question: "3又4/5 - 1又1/5 = ?", answer: "2又3/5", answers: ["2又3/5", "2 3/5"] },
         { question: "1又3/8 化為假分數是？", answer: "11/8" },
         { question: "2又1/5 化為假分數是？", answer: "11/5" },
         { question: "2/7 + 3/7 = ?", answer: "5/7" },
         { question: "11/12 - 5/12 = ?", answer: "6/12" },
-        { question: "2 - 1/3 = ?", answer: "1又2/3" },
+        { question: "2 - 1/3 = ?", answer: "1又2/3", answers: ["1又2/3", "1 2/3"] },
         { question: "1/8 + 5/8 = ?", answer: "6/8" },
-        { question: "8/5 化為帶分數是？", answer: "1又3/5" },
+        { question: "8/5 化為帶分數是？", answer: "1又3/5", answers: ["1又3/5", "1 3/5"] },
         { question: "3又1/4 - 1/4 = ?", answer: "3" },
         { question: "4/10 + 5/10 = ?", answer: "9/10" },
-        { question: "9/6 化為帶分數是？", answer: "1又3/6" },
-        { question: "1又2/5 + 2又1/5 = ?", answer: "3又3/5" }
+        { question: "9/6 化為帶分數是？", answer: "1又3/6", answers: ["1又3/6", "1 3/6"] },
+        { question: "1又2/5 + 2又1/5 = ?", answer: "3又3/5", answers: ["3又3/5", "3 3/5"] }
       ],
       zhuyin: [
         { question: "算算看：25 + 13 = ?", answer: "38" },
@@ -2165,6 +2166,198 @@
         "綠": "ㄌㄩˋ", "黑": "ㄏㄟ", "白": "ㄅㄞˊ", "金": "ㄐㄧㄣ", "銀": "ㄧㄣˊ", "色": "ㄙㄜˋ"
       },
 
+      // 國小常用多音字/破音字詞組消歧字典（方案 C 自動層：涵蓋國語與數學核心領域）
+      phrases: {
+        // 長 (ㄔㄤˊ / ㄓㄤˇ)
+        "長方形": ["ㄔㄤˊ", "ㄈㄤ", "ㄒㄧㄥˊ"],
+        "長度": ["ㄔㄤˊ", "ㄉㄨˋ"],
+        "邊長": ["ㄅㄧㄢ", "ㄔㄤˊ"],
+        "長度單位": ["ㄔㄤˊ", "ㄉㄨˋ", "ㄉㄢ", "ㄨㄟˋ"],
+        "長頸鹿": ["ㄔㄤˊ", "ㄐㄧㄥˇ", "ㄌㄨˋ"],
+        "長跑": ["ㄔㄤˊ", "ㄆㄠˇ"],
+        "很長": ["ㄏㄣˇ", "ㄔㄤˊ"],
+        "長大": ["ㄓㄤˇ", "ㄉㄚˋ"],
+        "生長": ["ㄕㄥ", "ㄓㄤˇ"],
+        "長輩": ["ㄓㄤˇ", "ㄅㄟˋ"],
+        "校長": ["ㄒㄧㄠˋ", "ㄓㄤˇ"],
+        "家長": ["ㄐㄧㄚ", "ㄓㄤˇ"],
+        "長高": ["ㄓㄤˇ", "ㄍㄠ"],
+        "兄長": ["ㄒㄩㄥ", "ㄓㄤˇ"],
+        "部長": ["ㄅㄨˋ", "ㄓㄤˇ"],
+        "師長": ["ㄕ", "ㄓㄤˇ"],
+
+        // 數 (ㄕㄨˋ / ㄕㄨˇ)
+        "數學": ["ㄕㄨˋ", "ㄒㄩㄝˊ"],
+        "數字": ["ㄕㄨˋ", "ㄗˋ"],
+        "數量": ["ㄕㄨˋ", "ㄌㄧㄤˋ"],
+        "公倍數": ["ㄍㄨㄥ", "ㄅㄟˋ", "ㄕㄨˋ"],
+        "公因數": ["ㄍㄨㄥ", "ㄧㄣ", "ㄕㄨˋ"],
+        "因數": ["ㄧㄣ", "ㄕㄨˋ"],
+        "倍數": ["ㄅㄟˋ", "ㄕㄨˋ"],
+        "奇數": ["ㄐㄧ", "ㄕㄨˋ"],
+        "偶數": ["ㄡˇ", "ㄕㄨˋ"],
+        "質數": ["ㄓˊ", "ㄕㄨˋ"],
+        "分數": ["ㄈㄣ", "ㄕㄨˋ"],
+        "小數": ["ㄒㄧㄠˇ", "ㄕㄨˋ"],
+        "整數": ["ㄓㄥˇ", "ㄕㄨˋ"],
+        "真分數": ["ㄓㄣ", "ㄈㄣ", "ㄕㄨˋ"],
+        "假分數": ["ㄐㄧㄚˇ", "ㄈㄣ", "ㄕㄨˋ"],
+        "帶分數": ["ㄉㄞˋ", "ㄈㄣ", "ㄕㄨˋ"],
+        "位數": ["ㄨㄟˋ", "ㄕㄨˋ"],
+        "次數": ["ㄘˋ", "ㄕㄨˋ"],
+        "數一數": ["ㄕㄨˇ", "ㄧ", "ㄕㄨˇ"],
+        "倒數": ["ㄉㄠˋ", "ㄕㄨˇ"],
+        "數數": ["ㄕㄨˇ", "ㄕㄨˇ"],
+        "數不清": ["ㄕㄨˇ", "ㄅㄨˋ", "ㄑㄧㄥ"],
+
+        // 假 (ㄐㄧㄚˇ / ㄐㄧㄚˋ)
+        "假裝": ["ㄐㄧㄚˇ", "ㄓㄨㄤ"],
+        "假設": ["ㄐㄧㄚˇ", "ㄕㄜˋ"],
+        "放假": ["ㄈㄤˋ", "ㄐㄧㄚˋ"],
+        "假期": ["ㄐㄧㄚˋ", "ㄑㄧˊ"],
+        "休假": ["ㄒㄧㄡ", "ㄐㄧㄚˋ"],
+        "請假": ["ㄑㄧㄥˇ", "ㄐㄧㄚˋ"],
+        "暑假": ["ㄕㄨˇ", "ㄐㄧㄚˋ"],
+        "寒假": ["ㄏㄢˊ", "ㄐㄧㄚˋ"],
+        "假日": ["ㄐㄧㄚˋ", "ㄖˋ"],
+        "度假": ["ㄉㄨˋ", "ㄐㄧㄚˋ"],
+
+        // 樂 (ㄌㄜˋ / ㄩㄝˋ)
+        "快樂": ["ㄎㄨㄞˋ", "ㄌㄜˋ"],
+        "可樂": ["ㄎㄜˇ", "ㄌㄜˋ"],
+        "樂趣": ["ㄌㄜˋ", "ㄑㄩˋ"],
+        "歡樂": ["ㄏㄨㄢ", "ㄌㄜˋ"],
+        "音樂": ["ㄧㄣ", "ㄩㄝˋ"],
+        "樂器": ["ㄩㄝˋ", "ㄑㄧˋ"],
+        "樂團": ["ㄩㄝˋ", "ㄊㄨㄢˊ"],
+        "交響樂": ["ㄐㄧㄠ", "ㄒㄧㄤˇ", "ㄩㄝˋ"],
+        "國樂": ["ㄍㄨㄛˊ", "ㄩㄝˋ"],
+
+        // 著 (˙ㄓㄜ / ㄓㄨˋ / ㄓㄠ)
+        "看著": ["ㄎㄢˋ", "˙ㄓㄜ"],
+        "聽著": ["ㄊㄧㄥ", "˙ㄓㄜ"],
+        "走著": ["ㄗㄡˇ", "˙ㄓㄜ"],
+        "坐著": ["ㄗㄨㄛˋ", "˙ㄓㄜ"],
+        "拿著": ["ㄋㄚˊ", "˙ㄓㄜ"],
+        "順著": ["ㄕㄨㄣˋ", "˙ㄓㄜ"],
+        "著名": ["ㄓㄨˋ", "ㄇㄧㄥˊ"],
+        "著作": ["ㄓㄨˋ", "ㄗㄨㄛˋ"],
+        "急著": ["ㄐㄧˊ", "˙ㄓㄜ"],
+        "著急": ["ㄓㄠ", "ㄐㄧˊ"],
+
+        // 應 (ㄧㄥ / ㄧㄥˋ)
+        "應該": ["ㄧㄥ", "ㄍㄞ"],
+        "應當": ["ㄧㄥ", "ㄉㄤ"],
+        "應用題": ["ㄧㄥˋ", "ㄩㄥˋ", "ㄊㄧˊ"],
+        "應用": ["ㄧㄥˋ", "ㄩㄥˋ"],
+        "答應": ["ㄉㄚ", "˙ㄧㄥ"],
+        "反應": ["ㄈㄢˇ", "ㄧㄥˋ"],
+        "相應": ["ㄒㄧㄤ", "ㄧㄥˋ"],
+
+        // 還 (ㄏㄞˊ / ㄏㄨㄢˊ)
+        "還有": ["ㄏㄞˊ", "ㄧㄡˇ"],
+        "還是": ["ㄏㄞˊ", "ㄕˋ"],
+        "還好": ["ㄏㄞˊ", "ㄏㄠˇ"],
+        "還剩下": ["ㄏㄞˊ", "ㄕㄥˋ", "ㄒㄧㄚˋ"],
+        "還剩": ["ㄏㄞˊ", "ㄕㄥˋ"],
+        "還原": ["ㄏㄨㄢˊ", "ㄩㄢˊ"],
+        "歸還": ["ㄍㄨㄟ", "ㄏㄨㄢˊ"],
+        "退還": ["ㄊㄨㄟˋ", "ㄏㄨㄢˊ"],
+        "償還": ["ㄔㄤˊ", "ㄏㄨㄢˊ"],
+
+        // 重 (ㄓㄨㄥˋ / ㄔㄨㄥˊ)
+        "重量": ["ㄓㄨㄥˋ", "ㄌㄧㄤˋ"],
+        "重要": ["ㄓㄨㄥˋ", "ㄧㄠˋ"],
+        "重力": ["ㄓㄨㄥˋ", "ㄌㄧˋ"],
+        "體重": ["ㄊㄧˇ", "ㄓㄨㄥˋ"],
+        "嚴重": ["ㄧㄢˊ", "ㄓㄨㄥˋ"],
+        "舉重": ["ㄐㄩˇ", "ㄓㄨㄥˋ"],
+        "重疊": ["ㄔㄨㄥˊ", "ㄉㄧㄝˊ"],
+        "重新": ["ㄔㄨㄥˊ", "ㄒㄧㄣ"],
+        "重複": ["ㄔㄨㄥˊ", "ㄈㄨˋ"],
+        "重來": ["ㄔㄨㄥˊ", "ㄌㄞˊ"],
+
+        // 差 (ㄔㄚ / ㄔㄞ / ㄔㄚˋ / ㄘ)
+        "相差": ["ㄒㄧㄤ", "ㄔㄚ"],
+        "差距": ["ㄔㄚ", "ㄐㄩˋ"],
+        "誤差": ["ㄨˋ", "ㄔㄚ"],
+        "出差": ["ㄔㄨ", "ㄔㄞ"],
+        "差事": ["ㄔㄞ", "ㄕˋ"],
+        "差不多": ["ㄔㄚˋ", "ㄅㄨˋ", "ㄉㄨㄛ"],
+        "參差": ["ㄘㄣ", "ㄘ"],
+
+        // 行 (ㄒㄧㄥˊ / ㄏㄤˊ)
+        "行動": ["ㄒㄧㄥˊ", "ㄉㄨㄥˋ"],
+        "自行車": ["ㄗˋ", "ㄒㄧㄥˊ", "ㄔㄜ"],
+        "行人": ["ㄒㄧㄥˊ", "ㄖㄣˊ"],
+        "直行": ["ㄓˊ", "ㄒㄧㄥˊ"],
+        "不行": ["ㄅㄨˋ", "ㄒㄧㄥˊ"],
+        "銀行": ["ㄧㄣˊ", "ㄏㄤˊ"],
+        "行業": ["ㄏㄤˊ", "ㄧㄝˋ"],
+        "一行": ["ㄧ", "ㄏㄤˊ"],
+        "第一行": ["ㄉㄧˋ", "ㄧ", "ㄏㄤˊ"],
+
+        // 量 (ㄌㄧㄤˊ / ㄌㄧㄤˋ)
+        "測量": ["ㄘㄜˋ", "ㄌㄧㄤˊ"],
+        "稱量": ["ㄔㄥ", "ㄌㄧㄤˊ"],
+        "商量": ["ㄕㄤ", "˙ㄌㄧㄤ"],
+        "容量": ["ㄖㄨㄥˊ", "ㄌㄧㄤˋ"],
+        "重量": ["ㄓㄨㄥˋ", "ㄌㄧㄤˋ"],
+        "數量": ["ㄕㄨˋ", "ㄌㄧㄤˋ"],
+        "力量": ["ㄌㄧˋ", "ㄌㄧㄤˋ"],
+
+        // 轉 (ㄓㄨㄢˇ / ㄓㄨㄢˋ)
+        "轉彎": ["ㄓㄨㄢˇ", "ㄨㄢ"],
+        "轉頭": ["ㄓㄨㄢˇ", "ㄊㄡˊ"],
+        "轉動": ["ㄓㄨㄢˇ", "ㄉㄨㄥˋ"],
+        "旋轉": ["ㄒㄩㄢˊ", "ㄓㄨㄢˇ"],
+        "自轉": ["ㄗˋ", "ㄓㄨㄢˋ"],
+        "公轉": ["ㄍㄨㄥ", "ㄓㄨㄢˋ"],
+
+        // 便 (ㄅㄧㄢˋ / ㄆㄧㄢˊ)
+        "方便": ["ㄈㄤ", "ㄅㄧㄢˋ"],
+        "便利": ["ㄅㄧㄢˋ", "ㄌㄧˋ"],
+        "便宜": ["ㄆㄧㄢˊ", "ㄧˊ"],
+
+        // 倒 (ㄉㄠˋ / ㄉㄠˇ)
+        "倒水": ["ㄉㄠˋ", "ㄕㄨㄟˇ"],
+        "倒立": ["ㄉㄠˋ", "ㄌㄧˋ"],
+        "倒車": ["ㄉㄠˋ", "ㄔㄜ"],
+        "倒下": ["ㄉㄠˇ", "ㄒㄧㄚˋ"],
+        "跌倒": ["ㄉㄧㄝˊ", "ㄉㄠˇ"],
+        "摔倒": ["ㄕㄨㄞ", "ㄉㄠˇ"],
+
+        // 漂 (ㄆㄧㄠ / ㄆㄧㄠˋ / ㄆㄧㄠˇ)
+        "漂亮": ["ㄆㄧㄠˋ", "ㄌㄧㄤˋ"],
+        "漂流": ["ㄆㄧㄠ", "ㄌㄧㄡˊ"],
+        "漂白": ["ㄆㄧㄠˇ", "ㄅㄞˊ"],
+
+        // 盛 (ㄕㄥˋ / ㄔㄥˊ)
+        "盛開": ["ㄕㄥˋ", "ㄎㄞ"],
+        "盛大": ["ㄕㄥˋ", "ㄉㄚˋ"],
+        "盛飯": ["ㄔㄥˊ", "ㄈㄢˋ"],
+
+        // 累 (ㄌㄟˇ / ㄌㄟˋ)
+        "累積": ["ㄌㄟˇ", "ㄐㄧ"],
+        "好累": ["ㄏㄠˇ", "ㄌㄟˋ"],
+        "疲累": ["ㄆㄧˊ", "ㄌㄟˋ"],
+
+        // 得 (ㄉㄜˊ / ㄉㄟˇ / ˙ㄉㄜ)
+        "得到": ["ㄉㄜˊ", "ㄉㄠˋ"],
+        "獲得": ["ㄏㄨㄛˋ", "ㄉㄜˊ"],
+        "跑得快": ["ㄆㄠˇ", "˙ㄉㄜ", "ㄎㄨㄞˋ"],
+        "飛得高": ["ㄈㄟ", "˙ㄉㄜ", "ㄍㄠ"],
+        "算得快": ["ㄙㄨㄢˋ", "˙ㄉㄜ", "ㄎㄨㄞˋ"],
+        "覺得": ["ㄐㄩㄝˊ", "˙ㄉㄜ"],
+        "必須得": ["ㄅㄧˋ", "ㄒㄩ", "ㄉㄟˇ"],
+
+        // 覺 (ㄐㄩㄝˊ / ㄐㄧㄠˋ)
+        "覺得": ["ㄐㄩㄝˊ", "˙ㄉㄜ"],
+        "感覺": ["ㄍㄢˇ", "ㄐㄩㄝˊ"],
+        "睡覺": ["ㄕㄨㄟˋ", "ㄐㄧㄠˋ"],
+        "午覺": ["ㄨˇ", "ㄐㄧㄠˋ"]
+      },
+
       // 將拼音字串轉為標準注音符號 (遵循 render-zhuyin-web 規則)
       convertPinyinToZhuyin(value) {
         if (!value) return '';
@@ -2283,39 +2476,89 @@
           `</span></span>`;
       },
 
-      // 將整段文字轉換為帶注音的 HTML（雙軌制：pinyinPro 全字庫動態標註 + 離線豐富字庫）
+      // 濾除非注音版中的手動覆寫注音符號（如 長[ㄓㄤˇ]大 -> 長大，長(ㄓㄤˇ)大 -> 長大）
+      stripManualOverrides(text) {
+        if (!text) return '';
+        return String(text).replace(/([\u4e00-\u9fa5\u3400-\u4dbf\u3007])(?:\[([ㄅ-ㄩˊˇˋ˙\s·•]+)\]|\(([ㄅ-ㄩˊˇˋ˙\s·•]+)\))/g, (m, c) => c);
+      },
+
+      // 將整段文字轉換為帶注音的 HTML（方案 C 雙軌制：手動指定覆寫 > 高頻詞組消歧 > pinyinPro 全字庫 > 離線豐富字庫）
       annotate(text) {
         if (!text) return '';
         const hanRegex = /[\u4e00-\u9fa5\u3400-\u4dbf\u3007]/;
-        let html = '';
-        const chars = Array.from(String(text));
 
-        // 優先嘗試使用 pinyinPro 進行智慧全句動態辨識（連網環境下 100% 覆蓋所有漢字）
+        // 1. 解析輸入字串，提取手動注音覆寫（語法：字[注音] 或 字(注音)）
+        const tokens = [];
+        let i = 0;
+        const str = String(text);
+        while (i < str.length) {
+          const char = str[i];
+          if (hanRegex.test(char)) {
+            const rest = str.slice(i + 1);
+            const m = rest.match(/^(?:\[([ㄅ-ㄩˊˇˋ˙\s·•]+)\]|\(([ㄅ-ㄩˊˇˋ˙\s·•]+)\))/);
+            if (m) {
+              let zy = (m[1] || m[2]).trim().replace(/[·•]/g, '˙');
+              tokens.push({ char, manualZhuyin: zy, isHan: true });
+              i += 1 + m[0].length;
+              continue;
+            }
+            tokens.push({ char, manualZhuyin: null, isHan: true });
+          } else {
+            tokens.push({ char, manualZhuyin: null, isHan: false });
+          }
+          i++;
+        }
+
+        // 2. 組合純淨字串（用於詞組消歧與 pinyinPro 語境分析）
+        const cleanText = tokens.map(t => t.char).join('');
+
+        // 3. 國小高頻多音字/破音字詞組消歧比對（最長匹配優先）
+        const phraseMap = new Array(cleanText.length).fill(null);
+        if (this.phrases) {
+          const phraseKeys = Object.keys(this.phrases).sort((a, b) => b.length - a.length);
+          for (const phrase of phraseKeys) {
+            let pos = cleanText.indexOf(phrase);
+            while (pos !== -1) {
+              const list = this.phrases[phrase];
+              for (let k = 0; k < phrase.length; k++) {
+                if (!phraseMap[pos + k]) {
+                  phraseMap[pos + k] = list[k];
+                }
+              }
+              pos = cleanText.indexOf(phrase, pos + 1);
+            }
+          }
+        }
+
+        // 4. pinyinPro 全字庫動態語境分析
         let pinyinTokens = null;
         if (typeof pinyinPro !== 'undefined' && typeof pinyinPro.pinyin === 'function') {
           try {
-            pinyinTokens = pinyinPro.pinyin(text, { toneType: 'num', type: 'array' });
+            pinyinTokens = pinyinPro.pinyin(cleanText, { toneType: 'num', type: 'array' });
           } catch (e) {
             console.warn('pinyinPro 解析略過', e);
           }
         }
 
-        for (let i = 0; i < chars.length; i++) {
-          const char = chars[i];
-          if (hanRegex.test(char)) {
-            let zy = '';
-            // 1. 優先從 pinyinPro 動態取得並轉為注音
-            if (pinyinTokens && pinyinTokens[i]) {
-              zy = this.convertPinyinToZhuyin(pinyinTokens[i]);
-            }
-            // 2. 查無或離線環境時，從豐富字典精確查詢
+        // 5. 逐字生成直式注音 HTML（優先權：手動覆寫 > 詞組消歧 > pinyinPro > 內建字典）
+        let html = '';
+        for (let idx = 0; idx < tokens.length; idx++) {
+          const item = tokens[idx];
+          if (item.isHan) {
+            let zy = item.manualZhuyin;
             if (!zy) {
-              zy = this.dict[char] || '';
+              zy = phraseMap[idx];
             }
-            html += this.buildCharHTML(char, zy);
+            if (!zy && pinyinTokens && pinyinTokens[idx]) {
+              zy = this.convertPinyinToZhuyin(pinyinTokens[idx]);
+            }
+            if (!zy) {
+              zy = this.dict[item.char] || '';
+            }
+            html += this.buildCharHTML(item.char, zy);
           } else {
             // 標點符號、數字、英文字母直接輸出
-            html += `<span class="bb-ascii-slot">${char}</span>`;
+            html += `<span class="bb-ascii-slot">${item.char}</span>`;
           }
         }
 
@@ -2833,18 +3076,34 @@
         return arr;
       }
 
-      // 載入題庫（優先從專屬 mode key 讀取，沒有則使用該版本預設題庫）
+      // 載入題庫（各版本完全獨立隔離，並實施防跨版本污染修復機制）
       loadQuestions() {
+        this.questions = null; // 每次載入前強制重設，絕不沿用前一版本的題庫指針
+
         const savedSteps = localStorage.getItem('tug_of_war_winsteps');
         if (savedSteps) {
           this.winSteps = parseInt(savedSteps, 10) || 5;
         }
 
-        // 若注音版使用者本機尚存有舊版題庫，自動升級為最新兩位數加減法預設題庫
-        if (this.currentMode === 'zhuyin' && !localStorage.getItem('tug_of_war_zhuyin_v3')) {
+        // 一次性跨版本污染檢測與自動重設（清理曾因模式切換殘留而污染的錯誤本機題庫）
+        if (!localStorage.getItem('tug_of_war_bank_purged_v4')) {
           try {
-            localStorage.setItem('tug_of_war_zhuyin_v3', 'true');
-            localStorage.removeItem('tug_of_war_questions_zhuyin');
+            ['decimal', 'fraction'].forEach(m => {
+              const k = `tug_of_war_questions_${m}`;
+              const s = localStorage.getItem(k);
+              if (s) {
+                const p = JSON.parse(s);
+                if (Array.isArray(p)) {
+                  if (m === 'decimal' && !p.some(q => (q.question && q.question.includes('.')) || (q.answer && q.answer.includes('.')))) {
+                    localStorage.removeItem(k);
+                  }
+                  if (m === 'fraction' && !p.some(q => (q.question && (q.question.includes('/') || q.question.includes('又'))) || (q.answer && (q.answer.includes('/') || q.answer.includes('又'))))) {
+                    localStorage.removeItem(k);
+                  }
+                }
+              }
+            });
+            localStorage.setItem('tug_of_war_bank_purged_v4', 'true');
           } catch (e) {}
         }
 
@@ -2859,7 +3118,37 @@
           try {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              this.questions = parsed;
+              // 題庫特徵智能檢驗：杜絕跨版本題庫污染
+              let isContaminated = false;
+
+              if (this.currentMode === 'decimal') {
+                // 小數版：題目或答案應含有小數點或「小數」；若含「算算看/進位加法」且無小數點，判定為污染
+                const hasDecimal = parsed.some(q => (q.question && q.question.includes('.')) || (q.answer && q.answer.includes('.')));
+                const hasZhuyinSignature = parsed.some(q => q.question && (q.question.includes('算算看') || q.question.includes('進位加法') || q.question.includes('退位減法')));
+                if (!hasDecimal && hasZhuyinSignature) {
+                  isContaminated = true;
+                }
+              } else if (this.currentMode === 'fraction') {
+                // 分數版：題目或答案應含有分數線 / 或「又」；若含「算算看/進位加法」且無分數線，判定為污染
+                const hasFraction = parsed.some(q => (q.question && (q.question.includes('/') || q.question.includes('又'))) || (q.answer && (q.answer.includes('/') || q.answer.includes('又'))));
+                const hasZhuyinSignature = parsed.some(q => q.question && (q.question.includes('算算看') || q.question.includes('進位加法') || q.question.includes('退位減法')));
+                if (!hasFraction && hasZhuyinSignature) {
+                  isContaminated = true;
+                }
+              } else if (this.currentMode === 'zhuyin') {
+                // 注音版：若整份題庫全為分數且無注音題目特徵，判定為污染
+                const allFractions = parsed.length > 5 && parsed.every(q => (q.question && q.question.includes('/')) || (q.answer && q.answer.includes('/')));
+                if (allFractions) {
+                  isContaminated = true;
+                }
+              }
+
+              if (isContaminated) {
+                console.warn(`檢測到【${this.currentMode}】模式本機題庫曾遭跨版本混雜污染，系統已自動清除並重設為專屬正確題庫！`);
+                localStorage.removeItem(modeKey);
+              } else {
+                this.questions = parsed;
+              }
             }
           } catch (e) {
             console.error('題庫載入異常，改用預設題庫', e);
@@ -2867,9 +3156,9 @@
         }
 
         if (!this.questions || this.questions.length === 0) {
-          // 載入當前版本模式的專屬預設題庫
+          // 載入當前版本模式的專屬預設題庫（使用深拷貝 deep clone，杜絕物件引用污染）
           const bank = DEFAULT_BANKS[this.currentMode] || DEFAULT_BANKS.standard;
-          this.questions = [...bank];
+          this.questions = JSON.parse(JSON.stringify(bank));
         }
 
         // 正規化多答案支援：確保每一道題目皆具備 answers 陣列（相容歷史資料或包含逗號多解的格式）
@@ -2975,17 +3264,20 @@
         tagEl.textContent = `第 ${team.questionCount} 題`;
 
         const rawQ = team.currentQ.question;
+        const cleanQ = ZhuyinEngine.stripManualOverrides(rawQ);
+
         if (this.currentMode === 'zhuyin') {
-          // 低年級注音版：透過 ZhuyinEngine 直式標註國語注音
+          // 低年級注音版：透過 ZhuyinEngine 直式標註國語注音（方案 C：手動指定覆寫 > 詞組自動消歧）
           textEl.innerHTML = ZhuyinEngine.annotate(rawQ);
-        } else if (this.currentMode === 'fraction' || rawQ.includes('/')) {
-          // 分數版或含分數式：透過 FractionEngine 轉換為無破版直式排版
-          textEl.innerHTML = FractionEngine.formatToHTML(rawQ);
+        } else if (this.currentMode === 'fraction' || cleanQ.includes('/')) {
+          // 分數版或含分數式：透過 FractionEngine 轉換為無破版直式排版（濾除手動注音標註）
+          textEl.innerHTML = FractionEngine.formatToHTML(cleanQ);
         } else {
-          textEl.textContent = rawQ;
+          // 標準版、小數版：清除手動注音標註，正常顯示乾淨文字
+          textEl.textContent = cleanQ;
         }
 
-        this.adjustQuestionFontSize(textEl, rawQ);
+        this.adjustQuestionFontSize(textEl, cleanQ);
       }
 
       // 依據字數多寡動態調整字體大小，確保能舒適容納 50 字以上長題且不溢位
@@ -3417,6 +3709,7 @@
             if (this.currentMode === 'standard') {
               localStorage.removeItem('tug_of_war_questions');
             }
+            this.questions = null;
             this.loadQuestions();
             this.populateTextareaFromQuestions();
             this.updateQuestionsCountBadge();
@@ -3472,6 +3765,7 @@
         if (titleEl) {
           titleEl.textContent = `⚙️ 題庫管理 — 目前設定：【${modeNames[this.currentMode] || this.currentMode}】`;
         }
+        this.loadQuestions(); // 確保每次打開題庫管理彈窗時，載入的都是當前模式的最新純淨題庫
         this.populateTextareaFromQuestions();
         this.updateQuestionsCountBadge();
         this.elSelectWinSteps.value = this.winSteps;
