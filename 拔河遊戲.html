@@ -173,6 +173,204 @@
       user-select: none;
     }
 
+    /* 🎮 4 版本模式切換導覽列 (Cyber Mode Tabs) */
+    .mode-switcher-group {
+      display: flex;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .mode-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(59, 130, 246, 0.35));
+      border-color: var(--cyan-neon);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+    }
+
+    /* 🛡️ 著作權浮水印 (Pill-shaped Watermark Badge) */
+    .watermark-badge {
+      position: fixed;
+      bottom: 12px;
+      right: 16px;
+      background: rgba(18, 24, 28, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #cbd5e1;
+      padding: 5px 15px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+      pointer-events: none;
+      user-select: none;
+      z-index: 95;
+      letter-spacing: 0.6px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* 🍰 直式分數渲染樣式 (Fraction Typography) */
+    .frac-wrap {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 4px;
+      line-height: 1;
+    }
+
+    .frac-whole {
+      font-size: 1.15em;
+      font-weight: 900;
+      margin-right: 4px;
+      color: #ffffff;
+    }
+
+    .frac-sub {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+    }
+
+    .frac-num {
+      font-size: 0.76em;
+      font-weight: 800;
+      line-height: 1;
+      padding: 0 4px;
+      color: var(--cyan-neon);
+    }
+
+    .frac-bar {
+      width: 100%;
+      min-width: 16px;
+      height: 2px;
+      background: currentColor;
+      margin: 2px 0;
+      opacity: 0.85;
+    }
+
+    .frac-den {
+      font-size: 0.76em;
+      font-weight: 800;
+      line-height: 1;
+      padding: 0 4px;
+      color: var(--cyan-neon);
+    }
+
+    /* 🔤 注音渲染樣式 (Zhuyin Typography) */
+    .bb-zhuyin-inline {
+      display: inline;
+      line-height: 1.6;
+    }
+
+    .bb-zhuyin-pair {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      line-height: 1;
+      vertical-align: middle;
+      white-space: nowrap;
+      margin: 0 1px;
+    }
+
+    .bb-hanzi-slot {
+      line-height: 1;
+      font-weight: 800;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .bb-zhuyin-track {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      flex-shrink: 0;
+      line-height: 1;
+      font-weight: 700;
+      color: currentColor;
+    }
+
+    .bb-zhuyin-track--blank {
+      min-height: 1em;
+    }
+
+    .bb-zy-char,
+    .bb-zy-light {
+      line-height: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1em;
+      text-orientation: upright;
+    }
+
+    .bb-zy-tone {
+      font-size: 0.8em;
+      position: absolute;
+      left: 100%;
+      top: -0.15em;
+      white-space: nowrap;
+      text-orientation: upright;
+    }
+
+    /* 動態鍵盤佈局 */
+    .keypad-container.layout-decimal {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+    }
+    .keypad-container.layout-decimal .key-span-4 {
+      grid-column: span 4;
+    }
+
+    .keypad-container.layout-fraction {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+    }
+    .keypad-container.layout-fraction .key-span-3 {
+      grid-column: span 3;
+    }
+
+    .key-btn.key-symbol {
+      color: var(--cyan-neon);
+      border-color: rgba(0, 240, 255, 0.35);
+      background: rgba(0, 240, 255, 0.08);
+      font-size: 24px;
+    }
+    .key-btn.key-symbol:hover {
+      background: rgba(0, 240, 255, 0.25);
+    }
+
     .header-title {
       display: flex;
       flex-direction: column;
@@ -1304,6 +1502,14 @@
       </button>
     </div>
 
+    <!-- 🎮 4 版本模式切換分頁條 -->
+    <div class="mode-switcher-group" id="modeSwitcherGroup">
+      <button type="button" class="mode-btn active" data-mode="standard" title="切換為標準四則運算綜合版">🎯 標準版</button>
+      <button type="button" class="mode-btn" data-mode="decimal" title="切換為小數運算與度量衡版">🔢 小數版</button>
+      <button type="button" class="mode-btn" data-mode="fraction" title="切換為直式分數與帶分數對決版">🍰 分數版</button>
+      <button type="button" class="mode-btn" data-mode="zhuyin" title="切換為低年級生活與注音標註版">🔤 注音版</button>
+    </div>
+
     <div class="header-title">
       <h1>拔河知識大對決</h1>
       <span id="gameStatusBadge" class="game-status-badge">雙方就定位，率先答對領先！</span>
@@ -1603,37 +1809,11 @@
   <!-- JavaScript 核心邏輯 -->
   <script>
     // ==========================================================================
-    // 🎯【方式一：直接在程式碼中修改題庫】
-    // 老師若要固定專屬題目，可直接修改下方陣列中的 question（題目）與 answer（答案）。
+    // 🎯【四大版本專屬預設題庫】
+    // 各版本題庫完全獨立，儲存於獨立 localStorage 鍵名，彼此絕不相互覆蓋
     // ==========================================================================
-    const DEFAULT_QUESTION_BANK = [
-      { question: "長 48 公分、寬 36 公分的長方形紙張，要剪成大小相同且面積最大的正方形，正方形的邊長是幾公分？", answer: "12" },
-      { question: "小明每 4 天去一次圖書館，小華每 6 天去一次圖書館，今天兩人在圖書館相遇，最少幾天後他們會再次相遇？", answer: "12" },
-      { question: "有 45 顆蘋果和 75 顆橘子，平分裝進禮盒中，每盒的兩種水果數量都要一樣多，最多可以分裝成幾盒？", answer: "15" },
-      { question: "某站牌公車 A 每 10 分鐘發一班，公車 B 每 15 分鐘發一班，早上 8 點兩車同時發車，下一次同時發車是幾分鐘後？", answer: "30" },
-      { question: "8 × 9 = ?", answer: "72" },
-      { question: "125 ÷ 5 = ?", answer: "25" },
-      { question: "48 + 57 = ?", answer: "105" },
-      { question: "15 × 12 = ?", answer: "180" },
-      { question: "360 ÷ 12 = ?", answer: "30" },
-      { question: "7 × 7 - 15 = ?", answer: "34" },
-      { question: "一個三角形的內角和是幾度？", answer: "180" },
-      { question: "時針走一圈是幾小時？", answer: "12" },
-      { question: "1 公尺等於幾公分？", answer: "100" },
-      { question: "2 的 5 次方是多少？", answer: "32" },
-      { question: "平年二月有幾天？", answer: "28" },
-      { question: "99 + 999 = ?", answer: "1098" },
-      { question: "50 的一半再除以 5 = ?", answer: "5" },
-      { question: "正六邊形有幾條對稱軸？", answer: "6" },
-      { question: "100 - 37 = ?", answer: "63" },
-      { question: "一打鉛筆有幾枝？", answer: "12" },
-      { question: "圓周率取整數大約是多少？", answer: "3" },
-      { question: "正方體有幾個面？", answer: "6" }
-    ];
-
-    // 內建其他領域預設範本
-    const PRESET_BANKS = {
-      math: [
+    const DEFAULT_BANKS = {
+      standard: [
         { question: "長 48 公分、寬 36 公分的長方形紙張，要剪成大小相同且面積最大的正方形，正方形的邊長是幾公分？", answer: "12" },
         { question: "小明每 4 天去一次圖書館，小華每 6 天去一次圖書館，今天兩人在圖書館相遇，最少幾天後他們會再次相遇？", answer: "12" },
         { question: "有 45 顆蘋果和 75 顆橘子，平分裝進禮盒中，每盒的兩種水果數量都要一樣多，最多可以分裝成幾盒？", answer: "15" },
@@ -1644,9 +1824,93 @@
         { question: "15 × 12 = ?", answer: "180" },
         { question: "360 ÷ 12 = ?", answer: "30" },
         { question: "7 × 7 - 15 = ?", answer: "34" },
-        { question: "1000 - 357 = ?", answer: "643" },
-        { question: "14 × 14 = ?", answer: "196" }
+        { question: "一個三角形的內角和是幾度？", answer: "180" },
+        { question: "時針走一圈是幾小時？", answer: "12" },
+        { question: "1 公尺等於幾公分？", answer: "100" },
+        { question: "2 的 5 次方是多少？", answer: "32" },
+        { question: "平年二月有幾天？", answer: "28" },
+        { question: "99 + 999 = ?", answer: "1098" },
+        { question: "50 的一半再除以 5 = ?", answer: "5" },
+        { question: "正六邊形有幾條對稱軸？", answer: "6" },
+        { question: "100 - 37 = ?", answer: "63" },
+        { question: "一打鉛筆有幾枝？", answer: "12" },
+        { question: "圓周率取整數大約是多少？", answer: "3" },
+        { question: "正方體有幾個面？", answer: "6" }
       ],
+      decimal: [
+        { question: "0.3 + 0.4 = ?", answer: "0.7" },
+        { question: "1.5 + 2.8 = ?", answer: "4.3" },
+        { question: "5 - 1.6 = ?", answer: "3.4" },
+        { question: "0.25 × 4 = ?", answer: "1" },
+        { question: "1.2 × 5 = ?", answer: "6" },
+        { question: "7.2 ÷ 9 = ?", answer: "0.8" },
+        { question: "4.8 ÷ 4 = ?", answer: "1.2" },
+        { question: "3 公尺 50 公分是幾公尺？", answer: "3.5" },
+        { question: "1 公斤 200 公克是幾公斤？", answer: "1.2" },
+        { question: "0.6 的 10 倍是多少？", answer: "6" },
+        { question: "35 個 0.1 合起來是多少？", answer: "3.5" },
+        { question: "0.75 + 0.25 = ?", answer: "1" },
+        { question: "8.4 - 3.9 = ?", answer: "4.5" },
+        { question: "2.4 × 3 = ?", answer: "7.2" },
+        { question: "10 - 0.05 = ?", answer: "9.95" },
+        { question: "0.8 ÷ 2 = ?", answer: "0.4" },
+        { question: "15.6 + 4.4 = ?", answer: "20" },
+        { question: "0.1 × 0.1 = ?", answer: "0.01" },
+        { question: "5 公升 400 毫升是幾公升？", answer: "5.4" },
+        { question: "6 個 1 和 8 個 0.1 合起來是多少？", answer: "6.8" }
+      ],
+      fraction: [
+        { question: "1/5 + 2/5 = ?", answer: "3/5" },
+        { question: "7/9 - 4/9 = ?", answer: "3/9" },
+        { question: "1 - 3/7 = ?", answer: "4/7" },
+        { question: "1/4 + 3/4 = ?", answer: "1" },
+        { question: "5/3 化為帶分數是？", answer: "1又2/3" },
+        { question: "7/4 化為帶分數是？", answer: "1又3/4" },
+        { question: "1又1/2 + 1/2 = ?", answer: "2" },
+        { question: "2又1/3 + 1又1/3 = ?", answer: "3又2/3" },
+        { question: "3又4/5 - 1又1/5 = ?", answer: "2又3/5" },
+        { question: "1又3/8 化為假分數是？", answer: "11/8" },
+        { question: "2又1/5 化為假分數是？", answer: "11/5" },
+        { question: "2/7 + 3/7 = ?", answer: "5/7" },
+        { question: "11/12 - 5/12 = ?", answer: "6/12" },
+        { question: "2 - 1/3 = ?", answer: "1又2/3" },
+        { question: "1/8 + 5/8 = ?", answer: "6/8" },
+        { question: "8/5 化為帶分數是？", answer: "1又3/5" },
+        { question: "3又1/4 - 1/4 = ?", answer: "3" },
+        { question: "4/10 + 5/10 = ?", answer: "9/10" },
+        { question: "9/6 化為帶分數是？", answer: "1又3/6" },
+        { question: "1又2/5 + 2又1/5 = ?", answer: "3又3/5" }
+      ],
+      zhuyin: [
+        { question: "一隻小狗有4隻腳，兩隻小狗共有幾隻腳？", answer: "8" },
+        { question: "小明有5顆蘋果，吃了2顆，還剩下幾顆？", answer: "3" },
+        { question: "一星期有幾天？", answer: "7" },
+        { question: "一打鉛筆有幾枝？", answer: "12" },
+        { question: "草地上有6隻小雞，又跑來4隻，共有幾隻小雞？", answer: "10" },
+        { question: "昆蟲有幾隻腳？", answer: "6" },
+        { question: "盤子裡有8個餅乾，平分給2個人，每人可以分到幾個？", answer: "4" },
+        { question: "小兔子有幾隻耳朵？", answer: "2" },
+        { question: "小花有9朵花，送給媽媽3朵，還剩下幾朵？", answer: "6" },
+        { question: "一輛汽車有4個輪子，兩輛汽車共有幾個輪子？", answer: "8" },
+        { question: "樹上有7隻小鳥，飛走了5隻，還剩下幾隻？", answer: "2" },
+        { question: "手上有5根手指頭，兩隻手共有幾根手指頭？", answer: "10" },
+        { question: "盒子裡有15顆糖果，吃了5顆，還剩幾顆？", answer: "10" },
+        { question: "一隻小貓有4隻腳，三隻小貓共有幾隻腳？", answer: "12" },
+        { question: "一年有幾個月？", answer: "12" },
+        { question: "小華上午讀了3頁書，下午讀了6頁書，今天共讀了幾頁？", answer: "9" },
+        { question: "我有8枝鉛筆，爸爸又買了5枝給我，我現在有幾枝？", answer: "13" },
+        { question: "10個小朋友在排隊，排在第4個的小朋友前面有幾個人？", answer: "3" },
+        { question: "小青蛙有4隻腳，5隻小青蛙共有幾隻腳？", answer: "20" },
+        { question: "20減去8等於多少？", answer: "12" }
+      ]
+    };
+
+    // 保留相容性預設題庫指針
+    const DEFAULT_QUESTION_BANK = DEFAULT_BANKS.standard;
+
+    // 內建其他領域預設範本
+    const PRESET_BANKS = {
+      math: DEFAULT_BANKS.standard,
       measure: [
         { question: "1 公尺等於幾公分？", answer: "100" },
         { question: "1 公斤等於幾公克？", answer: "1000" },
@@ -1676,6 +1940,190 @@
         { question: "太陽系有幾大行星？", answer: "8" },
         { question: "光速每秒約幾萬公里？", answer: "30" }
       ]
+    };
+
+    // ==========================================================================
+    // 🍰 直式分數解析與比對引擎 (Fraction Engine)
+    // 支援真分數、假分數、帶分數即時排版轉換與等值計算驗證
+    // ==========================================================================
+    const FractionEngine = {
+      // 將字串中的分數語法轉換為直式 HTML 結構，保持大螢幕文字不破版
+      formatToHTML(text) {
+        if (!text) return '';
+        let s = String(text);
+        // 帶分數：例如 1又1/2 或 1 1/2 或 1-1/2
+        s = s.replace(/(\d+)\s*(?:又|\s+|-)\s*(\d+)\/(\d+)/g, (match, whole, num, den) => {
+          return `<span class="frac-wrap"><span class="frac-whole">${whole}</span><span class="frac-sub"><span class="frac-num">${num}</span><span class="frac-bar"></span><span class="frac-den">${den}</span></span></span>`;
+        });
+        // 純分數：例如 3/4
+        s = s.replace(/(\d+)\/(\d+)/g, (match, num, den) => {
+          return `<span class="frac-wrap"><span class="frac-sub"><span class="frac-num">${num}</span><span class="frac-bar"></span><span class="frac-den">${den}</span></span></span>`;
+        });
+        return s;
+      },
+
+      // 解析字串為精確數值
+      parseValue(str) {
+        if (!str) return NaN;
+        const s = String(str).trim().replace(/，/g, ',').replace(/／/g, '/');
+        // 帶分數：例如 1又1/2 或 1 1/2
+        const mixedMatch = s.match(/^(\d+)\s*(?:又|\s+|-)\s*(\d+)\/(\d+)$/);
+        if (mixedMatch) {
+          const w = parseInt(mixedMatch[1], 10);
+          const n = parseInt(mixedMatch[2], 10);
+          const d = parseInt(mixedMatch[3], 10);
+          if (d === 0) return NaN;
+          return w + (n / d);
+        }
+        // 純分數：例如 3/4
+        const fracMatch = s.match(/^(\d+)\/(\d+)$/);
+        if (fracMatch) {
+          const n = parseInt(fracMatch[1], 10);
+          const d = parseInt(fracMatch[2], 10);
+          if (d === 0) return NaN;
+          return n / d;
+        }
+        // 純小數或整數
+        const num = parseFloat(s);
+        return isNaN(num) ? NaN : num;
+      },
+
+      // 分數等價比對（字串相符 或 帶/假分數數值相等）
+      isEquivalent(userAns, targetAns) {
+        const u = String(userAns || '').trim().replace(/\s+/g, '');
+        const t = String(targetAns || '').trim().replace(/\s+/g, '');
+        if (u === t) return true;
+        // 容許「又」與空格替換
+        const uNorm = u.replace(/又/g, '');
+        const tNorm = t.replace(/又/g, '');
+        if (uNorm === tNorm) return true;
+
+        const valU = this.parseValue(u);
+        const valT = this.parseValue(t);
+        if (!isNaN(valU) && !isNaN(valT)) {
+          return Math.abs(valU - valT) < 1e-5;
+        }
+        return false;
+      }
+    };
+
+    // ==========================================================================
+    // 🔤 台灣教育部標準注音渲染引擎 (Zhuyin Engine)
+    // 遵循 render-zhuyin-web 規範：直式注音軌道、聲調定位與一對一漢字對齊
+    // ==========================================================================
+    const ZhuyinEngine = {
+      // 國小常用生字標準注音對照表（涵蓋低年級題庫與常用國字）
+      dict: {
+        "一": "ㄧ", "二": "ㄦˋ", "三": "ㄙㄢ", "四": "ㄙˋ", "五": "ㄨˇ",
+        "六": "ㄌㄧㄡˋ", "七": "ㄑㄧ", "八": "ㄅㄚ", "九": "ㄐㄧㄡˇ", "十": "ㄕˊ",
+        "百": "ㄅㄞˇ", "千": "ㄑㄧㄢ", "萬": "ㄨㄢˋ", "零": "ㄌㄧㄥˊ",
+        "隻": "ㄓ", "小": "ㄒㄧㄠˇ", "狗": "ㄍㄡˇ", "有": "ㄧㄡˇ", "腳": "ㄐㄧㄠˇ",
+        "兩": "ㄌㄧㄤˇ", "共": "ㄍㄨㄥˋ", "幾": "ㄐㄧˇ", "明": "ㄇㄧㄥˊ", "顆": "ㄎㄜ",
+        "蘋": "ㄆㄧㄥˊ", "果": "ㄍㄨㄛˇ", "吃": "ㄔ", "了": "ㄌㄜ˙", "還": "ㄏㄞˊ",
+        "剩": "ㄕㄥˋ", "下": "ㄒㄧㄚˋ", "星": "ㄒㄧㄥ", "期": "ㄑㄧˊ", "天": "ㄊㄧㄢ",
+        "打": "ㄉㄚˇ", "鉛": "ㄑㄧㄢ", "筆": "ㄅㄧˇ", "枝": "ㄓ", "草": "ㄘㄠˇ",
+        "地": "ㄉㄧˋ", "上": "ㄕㄤˋ", "雞": "ㄐㄧ", "又": "ㄧㄡˋ", "跑": "ㄆㄠˇ",
+        "來": "ㄌㄞˊ", "昆": "ㄎㄨㄣ", "蟲": "ㄔㄨㄥˊ", "盤": "ㄆㄢˊ", "子": "ㄗˇ",
+        "裡": "ㄌㄧˇ", "個": "ㄍㄜ˙", "餅": "ㄅㄧㄥˇ", "乾": "ㄍㄢ", "平": "ㄆㄧㄥˊ",
+        "分": "ㄈㄣ", "給": "ㄍㄟˇ", "人": "ㄖㄣˊ", "每": "ㄇㄟˇ", "可": "ㄎㄜˇ",
+        "以": "ㄧˇ", "到": "ㄉㄠˋ", "兔": "ㄊㄨˋ", "耳": "ㄦˇ", "朵": "ㄉㄨㄛˇ",
+        "花": "ㄏㄨㄚ", "送": "ㄙㄨㄥˋ", "媽": "ㄇㄚ", "輛": "ㄌㄧㄤˋ", "汽": "ㄑㄧˋ",
+        "車": "ㄔㄜ", "輪": "ㄌㄨㄣˊ", "樹": "ㄕㄨˋ", "鳥": "ㄋㄧㄠˇ", "飛": "ㄈㄟ",
+        "走": "ㄗㄡˇ", "手": "ㄕㄡˇ", "根": "ㄍㄣ", "指": "ㄓˇ", "頭": "ㄊㄡˊ",
+        "盒": "ㄏㄜˊ", "糖": "ㄊㄤˊ", "貓": "ㄇㄠ", "年": "ㄋㄧㄢˊ", "月": "ㄩㄝˋ",
+        "日": "ㄖˋ", "華": "ㄏㄨㄚˊ", "午": "ㄨˇ", "讀": "ㄉㄨˊ", "頁": "ㄧㄝˋ",
+        "書": "ㄕㄨ", "今": "ㄐㄧㄣ", "我": "ㄨㄛˇ", "爸": "ㄅㄚˋ", "買": "ㄇㄞˇ",
+        "現": "ㄒㄧㄢˋ", "在": "ㄗㄞˋ", "排": "ㄆㄞˊ", "隊": "ㄉㄨㄟˋ", "第": "ㄉㄧˋ",
+        "前": "ㄑㄧㄢˊ", "面": "ㄇㄧㄢˋ", "青": "ㄑㄧㄥ", "蛙": "ㄨㄚ", "減": "ㄐㄧㄢˇ",
+        "去": "ㄑㄩˋ", "等": "ㄉㄥˇ", "於": "ㄩˊ", "多": "ㄉㄨㄛ", "少": "ㄕㄠˇ",
+        "是": "ㄕˋ", "不": "ㄅㄨˋ", "和": "ㄏㄜˊ", "老": "ㄌㄠˇ", "師": "ㄕ",
+        "藍": "ㄌㄢˊ", "紅": "ㄏㄨㄥˊ", "題": "ㄊㄧˊ", "目": "ㄇㄨˋ", "答": "ㄉㄚˊ",
+        "對": "ㄉㄨㄟˋ", "錯": "ㄘㄨㄛˋ", "獲": "ㄏㄨㄛˋ", "勝": "ㄕㄥˋ", "作": "ㄗㄨㄛˋ",
+        "業": "ㄧㄝˋ", "開": "ㄎㄞ", "始": "ㄕˇ", "載": "ㄗㄞˋ", "入": "ㄖㄨˋ",
+        "中": "ㄓㄨㄥ", "長": "ㄔㄤˊ", "寬": "ㄎㄨㄢ", "高": "ㄍㄠ", "度": "ㄉㄨˋ",
+        "角": "ㄐㄧㄠˇ", "時": "ㄕˊ", "鐘": "ㄓㄨㄥ", "分": "ㄈㄣ", "秒": "ㄇㄧㄠˇ",
+        "公": "ㄍㄨㄥ", "尺": "ㄔˇ", "寸": "ㄘㄨㄣˋ", "斤": "ㄐㄧㄣ", "克": "ㄎㄜ",
+        "圓": "ㄩㄢˊ", "方": "ㄈㄤ", "形": "ㄒㄧㄥˊ", "面": "ㄇㄧㄢˋ", "積": "ㄐㄧ",
+        "長": "ㄓㄤˇ", "相": "ㄒㄧㄤ", "遇": "ㄩˋ", "禮": "ㄌㄧˇ", "數": "ㄕㄨˋ",
+        "最": "ㄗㄨㄟˋ", "圖": "ㄊㄨˊ", "館": "ㄍㄨㄢˇ", "站": "ㄓㄢˋ", "牌": "ㄆㄞˊ",
+        "車": "ㄔㄜ", "早": "ㄗㄠˇ", "次": "ㄘˋ", "發": "ㄈㄚ", "步": "ㄅㄨˋ",
+        "線": "ㄒㄧㄢˋ", "連": "ㄌㄧㄢˊ", "續": "ㄒㄩˋ", "同": "ㄊㄨㄥˊ", "水": "ㄕㄨㄟˇ",
+        "常": "ㄔㄤˊ", "溫": "ㄨㄣ", "壓": "ㄧㄚ", "沸": "ㄈㄟˋ", "騰": "ㄊㄥˊ",
+        "結": "ㄐㄧㄝˊ", "冰": "ㄅㄧㄥ", "太": "ㄊㄞˋ", "陽": "ㄧㄤˊ", "系": "ㄒㄧˋ",
+        "行": "ㄒㄧㄥˊ", "星": "ㄒㄧㄥ", "光": "ㄍㄨㄤ", "速": "ㄙㄨˋ", "大": "ㄉㄚˋ"
+      },
+
+      // 拆解注音字串（例如 "ㄌㄧㄤˇ" -> 符號 ["ㄌ","ㄧ","ㄤ"], 聲調 "ˇ", 類型 "standard"）
+      parseZhuyin(str) {
+        if (!str) return { chars: [], tone: '', type: '' };
+        let s = String(str).trim();
+        const tones = ["ˊ", "ˇ", "ˋ"];
+        const light = "˙";
+
+        if (s.includes(light)) {
+          s = s.replace(light, '');
+          return { chars: Array.from(s), tone: light, type: 'light' };
+        }
+
+        for (let t of tones) {
+          if (s.includes(t)) {
+            s = s.replace(t, '');
+            return { chars: Array.from(s), tone: t, type: 'standard' };
+          }
+        }
+
+        // 一聲（無聲調符號）
+        return { chars: Array.from(s), tone: '', type: 'standard' };
+      },
+
+      // 將單一漢字渲染為直式注音 pair HTML
+      buildCharHTML(char, zy) {
+        if (!zy) {
+          return `<span class="bb-zhuyin-pair"><span class="bb-hanzi-slot">${char}</span></span>`;
+        }
+
+        const p = this.parseZhuyin(zy);
+        let cells = [];
+
+        // 輕聲放在最上方
+        if (p.type === 'light') {
+          cells.push(`<span class="bb-zy-light" style="height:0.9em;">${p.tone}</span>`);
+        }
+
+        // 注音符號直式排列，聲調掛在最後一個符號右上角
+        for (let i = 0; i < p.chars.length; i++) {
+          const toneMark = (i === p.chars.length - 1 && p.tone && p.type === 'standard')
+            ? `<span class="bb-zy-tone">${p.tone}</span>`
+            : '';
+          cells.push(`<span class="bb-zy-char" style="height:0.9em;">${p.chars[i]}${toneMark}</span>`);
+        }
+
+        return `<span class="bb-zhuyin-pair" data-zhuyin-char="${char}">` +
+          `<span class="bb-hanzi-slot">${char}</span>` +
+          `<span class="bb-zhuyin-track" aria-hidden="true" style="font-size:0.36em; width:2.2em; margin-left:0.12em;">` +
+          cells.join('') +
+          `</span></span>`;
+      },
+
+      // 將整段文字轉換為帶注音的 HTML
+      annotate(text) {
+        if (!text) return '';
+        const hanRegex = /[\u4e00-\u9fa5]/;
+        let html = '';
+        const chars = Array.from(String(text));
+
+        for (let char of chars) {
+          if (hanRegex.test(char)) {
+            const zy = this.dict[char] || '';
+            html += this.buildCharHTML(char, zy);
+          } else {
+            // 標點符號、數字、英文字母直接輸出
+            html += `<span class="bb-ascii-slot">${char}</span>`;
+          }
+        }
+
+        return `<span class="bb-zhuyin-inline">${html}</span>`;
+      }
     };
 
     // ==========================================================================
@@ -1893,6 +2341,12 @@
     // ==========================================================================
     class TugGame {
       constructor() {
+        // 當前版本模式（預設標準版 standard，支援 decimal / fraction / zhuyin）
+        this.currentMode = localStorage.getItem('tug_of_war_mode') || 'standard';
+        if (!DEFAULT_BANKS[this.currentMode]) {
+          this.currentMode = 'standard';
+        }
+
         this.questions = [];
         this.unplayedPool = []; // 尚未出過的題目抽籤池（保證全場不重複出題）
         this.winSteps = 5; // 預設淨領先 5 步獲勝
@@ -1918,10 +2372,17 @@
         };
 
         this.initElements();
+        this.initModeSwitcher();
+        this.renderKeypads();
         this.loadVolume();
         this.loadQuestions();
         this.bindEvents();
         this.startNewGame(true);
+      }
+
+      // 取得當前模式的 localStorage 題庫鍵名（確保 4 個版本完全獨立隔離）
+      getStorageKey(mode = this.currentMode) {
+        return `tug_of_war_questions_${mode}`;
       }
 
       initElements() {
@@ -1985,6 +2446,127 @@
         this.elBtnPresetMeasure = document.getElementById('btnPresetMeasure');
         this.elBtnPresetIdiom = document.getElementById('btnPresetIdiom');
         this.elBtnPresetScience = document.getElementById('btnPresetScience');
+      }
+
+      // 初始化模式切換按鈕事件
+      initModeSwitcher() {
+        this.modeButtons = document.querySelectorAll('.mode-btn');
+        this.modeButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetMode = btn.dataset.mode;
+            if (targetMode && targetMode !== this.currentMode) {
+              sound.initContext();
+              sound.playClick();
+              this.switchMode(targetMode);
+            }
+          });
+        });
+        this.updateModeSwitcherUI();
+      }
+
+      // 更新模式切換器 UI 標籤與高亮
+      updateModeSwitcherUI() {
+        if (this.modeButtons) {
+          this.modeButtons.forEach(btn => {
+            if (btn.dataset.mode === this.currentMode) {
+              btn.classList.add('active');
+            } else {
+              btn.classList.remove('active');
+            }
+          });
+        }
+      }
+
+      // 切換版本模式（4 版本獨立切換）
+      switchMode(newMode) {
+        if (!DEFAULT_BANKS[newMode]) return;
+        this.currentMode = newMode;
+        try {
+          localStorage.setItem('tug_of_war_mode', newMode);
+        } catch (e) {
+          console.error(e);
+        }
+        this.updateModeSwitcherUI();
+        this.loadQuestions();
+        this.renderKeypads();
+        this.startNewGame(true);
+
+        const modeNames = {
+          standard: '🎯 標準綜合版',
+          decimal: '🔢 小數運算版',
+          fraction: '🍰 分數對決版',
+          zhuyin: '🔤 低年級注音版'
+        };
+        this.elGameStatusBadge.textContent = `已切換至【${modeNames[newMode] || newMode}】，即刻開局！`;
+      }
+
+      // 依當前版本動態渲染左右兩隊觸控小鍵盤
+      renderKeypads() {
+        let keypadHTML = '';
+        let layoutClass = 'layout-standard';
+
+        if (this.currentMode === 'decimal') {
+          layoutClass = 'layout-decimal';
+          keypadHTML = `
+            <button type="button" class="key-btn" data-key="7">7</button>
+            <button type="button" class="key-btn" data-key="8">8</button>
+            <button type="button" class="key-btn" data-key="9">9</button>
+            <button type="button" class="key-btn key-clear" data-key="CLEAR" title="清除">C</button>
+            <button type="button" class="key-btn" data-key="4">4</button>
+            <button type="button" class="key-btn" data-key="5">5</button>
+            <button type="button" class="key-btn" data-key="6">6</button>
+            <button type="button" class="key-btn" data-key="0">0</button>
+            <button type="button" class="key-btn" data-key="1">1</button>
+            <button type="button" class="key-btn" data-key="2">2</button>
+            <button type="button" class="key-btn" data-key="3">3</button>
+            <button type="button" class="key-btn key-symbol" data-key="." title="小數點">.</button>
+            <button type="button" class="key-btn key-submit key-span-4" data-key="SUBMIT" title="確認送出">✓ 確認送出</button>
+          `;
+        } else if (this.currentMode === 'fraction') {
+          layoutClass = 'layout-fraction';
+          keypadHTML = `
+            <button type="button" class="key-btn" data-key="7">7</button>
+            <button type="button" class="key-btn" data-key="8">8</button>
+            <button type="button" class="key-btn" data-key="9">9</button>
+            <button type="button" class="key-btn key-clear" data-key="CLEAR" title="清除">C</button>
+            <button type="button" class="key-btn" data-key="4">4</button>
+            <button type="button" class="key-btn" data-key="5">5</button>
+            <button type="button" class="key-btn" data-key="6">6</button>
+            <button type="button" class="key-btn" data-key="0">0</button>
+            <button type="button" class="key-btn" data-key="1">1</button>
+            <button type="button" class="key-btn" data-key="2">2</button>
+            <button type="button" class="key-btn" data-key="3">3</button>
+            <button type="button" class="key-btn key-symbol" data-key="/" title="分數線">/</button>
+            <button type="button" class="key-btn key-symbol" data-key="又" title="帶分數分隔">又</button>
+            <button type="button" class="key-btn key-submit key-span-3" data-key="SUBMIT" title="確認送出">✓ 確認送出</button>
+          `;
+        } else {
+          // standard 或 zhuyin（經典 3x4 佈局）
+          layoutClass = 'layout-standard';
+          keypadHTML = `
+            <button type="button" class="key-btn" data-key="7">7</button>
+            <button type="button" class="key-btn" data-key="8">8</button>
+            <button type="button" class="key-btn" data-key="9">9</button>
+            <button type="button" class="key-btn" data-key="4">4</button>
+            <button type="button" class="key-btn" data-key="5">5</button>
+            <button type="button" class="key-btn" data-key="6">6</button>
+            <button type="button" class="key-btn" data-key="1">1</button>
+            <button type="button" class="key-btn" data-key="2">2</button>
+            <button type="button" class="key-btn" data-key="3">3</button>
+            <button type="button" class="key-btn key-clear" data-key="CLEAR" title="清除">C</button>
+            <button type="button" class="key-btn" data-key="0">0</button>
+            <button type="button" class="key-btn key-submit" data-key="SUBMIT" title="確認送出">✓</button>
+          `;
+        }
+
+        if (this.elBlueKeypad) {
+          this.elBlueKeypad.className = `keypad-container ${layoutClass}`;
+          this.elBlueKeypad.innerHTML = keypadHTML;
+        }
+        if (this.elRedKeypad) {
+          this.elRedKeypad.className = `keypad-container ${layoutClass}`;
+          this.elRedKeypad.innerHTML = keypadHTML;
+        }
       }
 
       // 載入儲存的音量（預設 80%）
@@ -2054,51 +2636,35 @@
         return arr;
       }
 
-      // 載入題庫（優先從 localStorage 讀取，沒有則使用預設）
+      // 載入題庫（優先從專屬 mode key 讀取，沒有則使用該版本預設題庫）
       loadQuestions() {
-        const savedQuestions = localStorage.getItem('tug_of_war_questions');
         const savedSteps = localStorage.getItem('tug_of_war_winsteps');
-
         if (savedSteps) {
           this.winSteps = parseInt(savedSteps, 10) || 5;
         }
 
-        if (savedQuestions) {
-          try {
-            const parsed = JSON.parse(savedQuestions);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              let repaired = false;
-              this.questions = parsed.map(q => {
-                const ans = String(q.answer || '').trim();
-                // 若答案字串過長且包含中文標點，代表是先前被錯誤截斷的舊題庫資料，自動進行自我修復
-                if (ans.length > 8 && (ans.includes('，') || ans.includes(',') || ans.includes('？') || ans.includes('?'))) {
-                  repaired = true;
-                  const fullStr = q.question + '，' + ans;
-                  const lastComma = Math.max(fullStr.lastIndexOf(','), fullStr.lastIndexOf('，'));
-                  if (lastComma !== -1) {
-                    return {
-                      question: fullStr.substring(0, lastComma).trim(),
-                      answer: fullStr.substring(lastComma + 1).trim()
-                    };
-                  }
-                }
-                return q;
-              });
+        const modeKey = this.getStorageKey();
+        let saved = localStorage.getItem(modeKey);
+        // 相容舊有 key（若為 standard 且尚未儲存過新 key）
+        if (!saved && this.currentMode === 'standard') {
+          saved = localStorage.getItem('tug_of_war_questions');
+        }
 
-              if (repaired) {
-                try {
-                  localStorage.setItem('tug_of_war_questions', JSON.stringify(this.questions));
-                } catch (e) {
-                  console.error(e);
-                }
-              }
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              this.questions = parsed;
               return;
             }
           } catch (e) {
             console.error('題庫載入異常，改用預設題庫', e);
           }
         }
-        this.questions = [...DEFAULT_QUESTION_BANK];
+
+        // 載入當前版本模式的專屬預設題庫
+        const bank = DEFAULT_BANKS[this.currentMode] || DEFAULT_BANKS.standard;
+        this.questions = [...bank];
       }
 
       // 初始化未出題抽籤池（保證全場不重複出題）
@@ -2176,7 +2742,7 @@
         }
       }
 
-      // 渲染隊伍題目
+      // 渲染隊伍題目（支援注音標註、直式分數與自適應字級）
       renderQuestion(teamKey) {
         const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
         const tagEl = teamKey === 'blue' ? this.elBlueQuestionTag : this.elRedQuestionTag;
@@ -2187,8 +2753,19 @@
         }
 
         tagEl.textContent = `第 ${team.questionCount} 題`;
-        textEl.textContent = team.currentQ.question;
-        this.adjustQuestionFontSize(textEl, team.currentQ.question);
+
+        const rawQ = team.currentQ.question;
+        if (this.currentMode === 'zhuyin') {
+          // 低年級注音版：透過 ZhuyinEngine 直式標註國語注音
+          textEl.innerHTML = ZhuyinEngine.annotate(rawQ);
+        } else if (this.currentMode === 'fraction' || rawQ.includes('/')) {
+          // 分數版或含分數式：透過 FractionEngine 轉換為無破版直式排版
+          textEl.innerHTML = FractionEngine.formatToHTML(rawQ);
+        } else {
+          textEl.textContent = rawQ;
+        }
+
+        this.adjustQuestionFontSize(textEl, rawQ);
       }
 
       // 依據字數多寡動態調整字體大小，確保能舒適容納 50 字以上長題且不溢位
@@ -2197,24 +2774,27 @@
         let fontSize = 32;
         let lineHeight = 1.35;
 
+        // 注音版因包含注音軌道，基礎字級稍微調大讓拼讀更清晰
+        const isZhuyin = this.currentMode === 'zhuyin';
+
         if (len <= 8) {
-          fontSize = 38;
-          lineHeight = 1.3;
+          fontSize = isZhuyin ? 36 : 38;
+          lineHeight = isZhuyin ? 1.5 : 1.3;
         } else if (len <= 16) {
-          fontSize = 32;
-          lineHeight = 1.35;
+          fontSize = isZhuyin ? 30 : 32;
+          lineHeight = isZhuyin ? 1.5 : 1.35;
         } else if (len <= 28) {
-          fontSize = 26;
-          lineHeight = 1.4;
+          fontSize = isZhuyin ? 24 : 26;
+          lineHeight = isZhuyin ? 1.5 : 1.4;
         } else if (len <= 45) {
-          fontSize = 22;
-          lineHeight = 1.45;
+          fontSize = isZhuyin ? 20 : 22;
+          lineHeight = isZhuyin ? 1.5 : 1.45;
         } else if (len <= 65) {
-          fontSize = 19;
-          lineHeight = 1.45;
+          fontSize = isZhuyin ? 18 : 19;
+          lineHeight = isZhuyin ? 1.5 : 1.45;
         } else {
-          fontSize = 16;
-          lineHeight = 1.4;
+          fontSize = isZhuyin ? 15 : 16;
+          lineHeight = isZhuyin ? 1.45 : 1.4;
         }
 
         textEl.style.fontSize = `${fontSize}px`;
@@ -2234,13 +2814,18 @@
         });
       }
 
-      // 更新自製輸入條文字
+      // 更新自製輸入條文字（分數模式支援直式分數即時所見即所得預覽）
       updateAnswerDisplay(teamKey) {
         const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
         const displayEl = teamKey === 'blue' ? this.elBlueAnswerDisplay : this.elRedAnswerDisplay;
         const boxEl = teamKey === 'blue' ? this.elBlueAnswerBox : this.elRedAnswerBox;
 
-        displayEl.textContent = team.currentInput;
+        if (this.currentMode === 'fraction' && team.currentInput.length > 0) {
+          displayEl.innerHTML = FractionEngine.formatToHTML(team.currentInput);
+        } else {
+          displayEl.textContent = team.currentInput;
+        }
+
         if (team.currentInput.length > 0) {
           boxEl.classList.add('active');
         } else {
@@ -2248,7 +2833,7 @@
         }
       }
 
-      // 處理鍵盤按鍵（0 延遲原生觸控）
+      // 處理鍵盤按鍵（0 延遲原生觸控，含小數點與分數專屬按鍵處理）
       handleKeyInput(teamKey, key) {
         if (this.isGameOver) return;
         sound.playClick();
@@ -2266,8 +2851,24 @@
           return;
         }
 
-        // 輸入限制最多 8 碼，防止溢位
-        if (team.currentInput.length < 8) {
+        // 小數點防呆：不允許重複輸入點，開頭按點自動補 0.
+        if (key === '.') {
+          if (team.currentInput.includes('.')) return;
+          if (team.currentInput === '') team.currentInput = '0';
+        }
+
+        // 分數線防呆：不允許開頭或連續輸入 /，已有 / 則略過
+        if (key === '/') {
+          if (team.currentInput === '' || team.currentInput.endsWith('/') || team.currentInput.endsWith('又') || team.currentInput.includes('/')) return;
+        }
+
+        // 帶分數「又」防呆：不允許開頭輸入，已有「又」或「/」則略過
+        if (key === '又') {
+          if (team.currentInput === '' || team.currentInput.includes('又') || team.currentInput.includes('/')) return;
+        }
+
+        // 輸入限制最多 10 碼，防止大字體溢位
+        if (team.currentInput.length < 10) {
           team.currentInput += key;
           this.updateAnswerDisplay(teamKey);
         }
@@ -2285,7 +2886,7 @@
           .toLowerCase();
       }
 
-      // 驗證答案
+      // 驗證答案（支援四版本專屬答題比對：小數數值等價、分數帶假互換）
       submitAnswer(teamKey) {
         const team = teamKey === 'blue' ? this.teamBlue : this.teamRed;
         const boxEl = teamKey === 'blue' ? this.elBlueAnswerBox : this.elRedAnswerBox;
@@ -2297,24 +2898,42 @@
 
         const currentQ = team.currentQ;
         if (!currentQ) return;
-        const rawUser = team.currentInput;
-        const rawCorrect = String(currentQ.answer || '');
+        const rawUser = team.currentInput.trim();
+        const rawCorrect = String(currentQ.answer || '').trim();
 
-        const userClean = this.normalizeAnswer(rawUser);
-        let correctClean = this.normalizeAnswer(rawCorrect);
+        let isCorrect = false;
 
-        // 防呆 1：若答案依然夾帶逗號或問號（舊資料未清理），自動擷取最後一部分作為答案
-        if (correctClean.includes('，') || correctClean.includes(',') || correctClean.includes('？') || correctClean.includes('?')) {
-          const splitParts = rawCorrect.split(/[,，]/);
-          if (splitParts.length > 1) {
-            correctClean = this.normalizeAnswer(splitParts[splitParts.length - 1]);
+        if (this.currentMode === 'fraction') {
+          // 分數版本：支援帶分數、假分數等值認定（如 1又1/2 與 3/2）
+          isCorrect = FractionEngine.isEquivalent(rawUser, rawCorrect);
+        } else if (this.currentMode === 'decimal') {
+          // 小數版本：支援字串精確比對 或 浮點數值等價（如 0.5 與 .5）
+          if (rawUser === rawCorrect) {
+            isCorrect = true;
+          } else {
+            const valU = parseFloat(rawUser);
+            const valC = parseFloat(rawCorrect);
+            if (!isNaN(valU) && !isNaN(valC) && Math.abs(valU - valC) < 1e-5) {
+              isCorrect = true;
+            }
           }
+        } else {
+          // 標準版與低年級注音版常規驗證
+          const userClean = this.normalizeAnswer(rawUser);
+          let correctClean = this.normalizeAnswer(rawCorrect);
+
+          // 防呆 1：若答案依然夾帶逗號或問號（舊資料未清理），自動擷取最後一部分作為答案
+          if (correctClean.includes('，') || correctClean.includes(',') || correctClean.includes('？') || correctClean.includes('?')) {
+            const splitParts = rawCorrect.split(/[,，]/);
+            if (splitParts.length > 1) {
+              correctClean = this.normalizeAnswer(splitParts[splitParts.length - 1]);
+            }
+          }
+
+          // 防呆 2：若題目答案包含中文單位（如「30分鐘」或「12公分」），比對純數字部分
+          const correctDigitsOnly = correctClean.replace(/[^0-9a-z]/g, '');
+          isCorrect = (userClean === correctClean) || (correctDigitsOnly && userClean === correctDigitsOnly);
         }
-
-        // 防呆 2：若題目答案包含中文單位（如「30分鐘」或「12公分」），而虛擬鍵盤只有數字，比對純數字部分
-        const correctDigitsOnly = correctClean.replace(/[^0-9a-z]/g, '');
-
-        const isCorrect = (userClean === correctClean) || (correctDigitsOnly && userClean === correctDigitsOnly);
 
         if (isCorrect) {
           // 答對了！
@@ -2549,13 +3168,22 @@
         });
 
         this.elBtnResetDefault.addEventListener('click', () => {
-          if (confirm('確定要清除自訂題庫，重設回系統預設題庫嗎？')) {
-            localStorage.removeItem('tug_of_war_questions');
-            localStorage.removeItem('tug_of_war_winsteps');
+          const modeNames = {
+            standard: '🎯 標準綜合版',
+            decimal: '🔢 小數運算版',
+            fraction: '🍰 分數對決版',
+            zhuyin: '🔤 低年級注音版'
+          };
+          const name = modeNames[this.currentMode] || this.currentMode;
+          if (confirm(`確定要清除【${name}】的自訂題庫，恢復為該版本的預設題庫嗎？（其他版本的題庫不受影響）`)) {
+            localStorage.removeItem(this.getStorageKey());
+            if (this.currentMode === 'standard') {
+              localStorage.removeItem('tug_of_war_questions');
+            }
             this.loadQuestions();
             this.populateTextareaFromQuestions();
             this.updateQuestionsCountBadge();
-            alert('已恢復預設題庫！');
+            alert(`已成功恢復【${name}】預設題庫！`);
           }
         });
 
@@ -2573,17 +3201,23 @@
           // 藍隊鍵盤對應（數字鍵 0~9, Backspace 清除, Enter 送出）
           if (['Digit0','Digit1','Digit2','Digit3','Digit4','Digit5','Digit6','Digit7','Digit8','Digit9'].includes(e.code)) {
             this.handleKeyInput('blue', e.code.replace('Digit', ''));
+          } else if (e.code === 'Period') {
+            this.handleKeyInput('blue', '.');
+          } else if (e.code === 'Slash') {
+            this.handleKeyInput('blue', '/');
           } else if (e.code === 'Backspace') {
             this.handleKeyInput('blue', 'CLEAR');
           } else if (e.code === 'Enter') {
             this.handleKeyInput('blue', 'SUBMIT');
           }
 
-          // 紅隊鍵盤對應（小鍵盤 Numpad 0~9, NumpadDecimal 清除, NumpadEnter 送出）
+          // 紅隊鍵盤對應（小鍵盤 Numpad 0~9, NumpadDecimal 清除/點, NumpadDivide 分數線, NumpadEnter 送出）
           if (['Numpad0','Numpad1','Numpad2','Numpad3','Numpad4','Numpad5','Numpad6','Numpad7','Numpad8','Numpad9'].includes(e.code)) {
             this.handleKeyInput('red', e.code.replace('Numpad', ''));
           } else if (e.code === 'NumpadDecimal') {
-            this.handleKeyInput('red', 'CLEAR');
+            this.handleKeyInput('red', this.currentMode === 'decimal' ? '.' : 'CLEAR');
+          } else if (e.code === 'NumpadDivide') {
+            this.handleKeyInput('red', '/');
           } else if (e.code === 'NumpadEnter') {
             this.handleKeyInput('red', 'SUBMIT');
           }
@@ -2591,6 +3225,16 @@
       }
 
       openSettingsModal() {
+        const modeNames = {
+          standard: '🎯 標準綜合版',
+          decimal: '🔢 小數運算版',
+          fraction: '🍰 分數對決版',
+          zhuyin: '🔤 低年級注音版'
+        };
+        const titleEl = this.elSettingsModal.querySelector('.modal-header h2');
+        if (titleEl) {
+          titleEl.textContent = `⚙️ 題庫管理 — 目前設定：【${modeNames[this.currentMode] || this.currentMode}】`;
+        }
         this.populateTextareaFromQuestions();
         this.updateQuestionsCountBadge();
         this.elSelectWinSteps.value = this.winSteps;
@@ -2699,16 +3343,24 @@
         this.questions = parsedQuestions;
         this.winSteps = parseInt(this.elSelectWinSteps.value, 10) || 5;
 
-        // 保存至 localStorage 實現本機記憶
+        // 保存至獨立模式 key 的 localStorage
         try {
-          localStorage.setItem('tug_of_war_questions', JSON.stringify(this.questions));
+          localStorage.setItem(this.getStorageKey(), JSON.stringify(this.questions));
           localStorage.setItem('tug_of_war_winsteps', this.winSteps.toString());
         } catch (e) {
           console.error(e);
         }
 
+        const modeNames = {
+          standard: '🎯 標準綜合版',
+          decimal: '🔢 小數運算版',
+          fraction: '🍰 分數對決版',
+          zhuyin: '🔤 低年級注音版'
+        };
+        const curName = modeNames[this.currentMode] || this.currentMode;
+
         this.elSettingsModal.style.display = 'none';
-        alert(`題庫更新成功！共匯入 ${this.questions.length} 道題目。${truncatedNotice}即刻開局！`);
+        alert(`【${curName}】題庫更新成功！共匯入 ${this.questions.length} 道題目。${truncatedNotice}即刻開局！`);
         this.startNewGame(true);
       }
     }
@@ -2786,5 +3438,8 @@
       new TugGame();
     });
   </script>
+
+  <!-- 🛡️ 著作權浮水印 (Created by 祐誠老師) -->
+  <div class="watermark-badge" title="拔河對戰遊戲 — 祐誠老師製作">Created by 祐誠老師</div>
 </body>
 </html>
